@@ -2,7 +2,7 @@ import React from 'react';
 
 const TemplateCard = ({ name }) => {
   return (
-    <div 
+    <div   
       className="d-flex flex-column align-items-center text-center" 
       style={{ width: '120px', cursor: 'pointer' }}
     >

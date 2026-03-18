@@ -9,8 +9,11 @@ function App() {
     
       <Router>
         <div className="min-vh-100">
+
           <Routes>
+            
             <Route path="/" element={<TemplateGalleryPage />} />
+
           </Routes>
         </div>
       </Router>

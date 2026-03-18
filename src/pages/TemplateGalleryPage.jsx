@@ -8,7 +8,7 @@ const TemplateGalleryPage = () => {
     id: i,
     name: "Template ex",
   }));
-
+  
   return (
     <div className="d-flex flex-column align-items-center p-4">
 
