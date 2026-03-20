@@ -22,9 +22,8 @@ const RegistrationHistory = () => {
     try {
       setLoading(true);
       const allLogs = await AuditLogService.getAllLogs();
-      // Filter for registration logs
       const registrationLogs = allLogs.filter(log => 
-        log.type === 'REGISTRATION' || log.type === 'Admin' // Adjust based on your data
+        log.type === 'REGISTRATION' || log.type === 'Admin' 
       );
       setLogs(registrationLogs);
       setFilteredLogs(registrationLogs);
@@ -54,7 +53,6 @@ const RegistrationHistory = () => {
     setCurrentPage(1);
   };
 
-  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
