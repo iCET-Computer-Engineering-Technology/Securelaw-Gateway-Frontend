@@ -4,7 +4,6 @@ import { Bookmark } from 'lucide-react';
 export default function TemplateModel({ template, onClose }) {
   if (!template) return null;
 
-  // This is the URL that points to your new Spring Boot endpoint
   const pdfViewUrl = `http://localhost:8080/api/templates/${template.id}/view`;
 
   return (
@@ -19,22 +18,22 @@ export default function TemplateModel({ template, onClose }) {
         onClick={(e) => e.stopPropagation()} 
       >
         
-        {/* LEFT SIDE: The REAL PDF Viewer using an iframe */}
+        
         <div 
           className="rounded-2 shadow-sm overflow-hidden" 
           style={{ width: '100%', maxWidth: '350px', height: '450px', backgroundColor: '#e2e4e9' }}
         >
-          {/* If it's a PDF, show it in the iframe */}
+         
           {template.fileType === 'application/pdf' ? (
             <iframe 
-              src={`${pdfViewUrl}#toolbar=0&navpanes=0`} // Hides the clunky PDF toolbars
+              src={`${pdfViewUrl}#toolbar=0&navpanes=0`} 
               title={template.name}
               width="100%" 
               height="100%" 
               style={{ border: 'none' }}
             />
           ) : (
-            /* Fallback just in case they uploaded a .docx or .txt file */
+            
             <div className="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-dark p-4 text-center">
               <div className="fs-5 fw-bold mb-2">{template.name}</div>
               <div className="small text-secondary">Document Preview Not Available for this file type.</div>
@@ -42,7 +41,7 @@ export default function TemplateModel({ template, onClose }) {
           )}
         </div>
 
-        {/* RIGHT SIDE: Real Details from Database */}
+        
         <div className="d-flex flex-column justify-content-center flex-grow-1 py-3">
           <h2 className="text-white mb-1" style={{ fontSize: '28px', fontWeight: '500' }}>
             {template.name}
@@ -51,13 +50,13 @@ export default function TemplateModel({ template, onClose }) {
             By {template.author || 'Unknown'} • {template.category || 'Uncategorized'}
           </p>
           
-          {/* Shows the actual description you typed in the upload form */}
+          
           <p className="text-light mb-5" style={{ fontSize: '14px', lineHeight: '1.6', opacity: 0.8 }}>
             {template.description || 'No description provided for this template.'}
           </p>
 
           <div className="d-flex gap-3 mt-auto align-items-center">
-            {/* The Download Button */}
+            
             <a 
               href={`http://localhost:8080/api/templates/${template.id}/download`}
               className="btn btn-primary flex-grow-1 rounded-3 py-2 d-flex justify-content-center align-items-center text-decoration-none" 

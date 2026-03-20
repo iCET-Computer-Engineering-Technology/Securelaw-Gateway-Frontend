@@ -8,7 +8,7 @@ body {
 
 /* Custom dark card background */
 .bg-dark-card {
-  background-color: #1e2538;
+  background-color: greenyellow;
 }
 
 /* Document preview box styling */
@@ -30,4 +30,33 @@ body {
   height: 4px;
   margin-bottom: 6px;
   opacity: 0.6;
+}
+:root {
+  --bg-main: #f0f2f5;
+  --bg-sidebar: #ffffff;
+  --bg-header: #ffffff;
+  --bg-card: #ffffff;
+  --bg-input: #f8f9fa;
+  --border-color: #dee2e6;
+  --text-main: #212529;
+  --text-muted: #6c757d;
+}
+
+/* DARK MODE (Your exact Figma colors) */
+[data-theme='dark'] {
+  --bg-main: #0d0e15;
+  --bg-sidebar: #13141f;
+  --bg-header: #1a1c29;
+  --bg-card: #222534;
+  --bg-input: #1a1c29;
+  --border-color: #32364a;
+  --text-main: #ffffff;
+  --text-muted: #a0a8b5;
+}
+
+/* Make sure the whole app uses these base colors smoothly */
+body {
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }

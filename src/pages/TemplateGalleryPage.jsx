@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Layout from '../components/Layout';
 import TemplateCard from '../components/TemplateCard';
-import TemplateModal from '../components/TemplateModel'; // Make sure the spelling matches your file!
+import TemplateModal from '../components/TemplateModel'; 
 
 export default function TemplateGalleryPage() {
   const [templates, setTemplates] = useState([]);
@@ -11,7 +11,6 @@ export default function TemplateGalleryPage() {
   const [selectedTemplate, setSelectedTemplate] = useState(null);
 
   useEffect(() => {
-    // Fetch templates from Spring Boot
     axios.get('http://localhost:8080/api/templates')
       .then((response) => {
         setTemplates(response.data);
@@ -27,18 +26,17 @@ export default function TemplateGalleryPage() {
   return (
     <Layout>
       <div className="w-100 mt-2 d-flex justify-content-center">
-        {/* Main Dark Box */}
+        {/* Main Card Container using var(--bg-card) */}
         <div className="w-100 rounded-4 shadow-lg overflow-hidden" 
-             style={{ maxWidth: '1000px', backgroundColor: '#222534', border: '1px solid #32364a' }}>
+             style={{ maxWidth: '1000px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', transition: 'background-color 0.3s ease' }}>
           
-          {/* Header */}
-          <div className="px-4 py-3" style={{ borderBottom: '1px solid #32364a' }}>
-            <h1 className="h6 text-light mb-0" style={{ fontWeight: '500' }}>Upload Template Collection</h1>
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
+            {/* Using var(--text-main) so it flips between black and white */}
+            <h1 className="h6 mb-0" style={{ fontWeight: '500', color: 'var(--text-main)' }}>Upload Template Collection</h1>
           </div>
 
-          {/* Grid Area */}
           <div className="p-4 p-md-5">
-            {loading && <div className="text-center text-light">Loading templates...</div>}
+            {loading && <div className="text-center" style={{ color: 'var(--text-main)' }}>Loading templates...</div>}
             {error && <div className="text-center text-danger">{error}</div>}
 
             {!loading && !error && (
@@ -53,11 +51,10 @@ export default function TemplateGalleryPage() {
               </div>
             )}
             
-            {/* Scroll indicator (Down Arrow) */}
             <div className="d-flex justify-content-center mt-5">
               <div style={{
                 width: '12px', height: '12px',
-                borderBottom: '2px solid #5a5f73', borderRight: '2px solid #5a5f73',
+                borderBottom: '2px solid var(--text-muted)', borderRight: '2px solid var(--text-muted)',
                 transform: 'rotate(45deg)', cursor: 'pointer'
               }}></div>
             </div>
@@ -65,7 +62,6 @@ export default function TemplateGalleryPage() {
         </div>
       </div>
 
-      {/* The Popup Modal */}
       <TemplateModal 
         template={selectedTemplate} 
         onClose={() => setSelectedTemplate(null)} 
