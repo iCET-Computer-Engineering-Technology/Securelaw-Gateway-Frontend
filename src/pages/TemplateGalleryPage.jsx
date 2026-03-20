@@ -1,59 +1,75 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Layout from '../components/Layout';
 import TemplateCard from '../components/TemplateCard';
+import TemplateModal from '../components/TemplateModel'; // Make sure the spelling matches your file!
 
-import { UserCircle } from 'lucide-react'; 
+export default function TemplateGalleryPage() {
+  const [templates, setTemplates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
 
-const TemplateGalleryPage = () => {
-  const templates = Array.from({ length: 14 }, (_, i) => ({
-    id: i,
-    name: "Template ex",
-  }));
-  
+  useEffect(() => {
+    // Fetch templates from Spring Boot
+    axios.get('http://localhost:8080/api/templates')
+      .then((response) => {
+        setTemplates(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching templates:", err);
+        setError("Failed to load templates.");
+        setLoading(false);
+      });
+  }, []);
+
   return (
-    <div className="d-flex flex-column align-items-center p-4">
-
-      <div className="container" style={{ maxWidth: '1150px' }}>
-        
-        <div className="d-flex justify-content-end mb-4">
-          <UserCircle 
-            size={32} 
-            className="text-secondary" 
-            style={{ cursor: 'pointer' }} 
-          />
-        </div>
-
-        <div className="bg-dark-card rounded-4 overflow-hidden shadow-lg border border-secondary">
+    <Layout>
+      <div className="w-100 mt-2 d-flex justify-content-center">
+        {/* Main Dark Box */}
+        <div className="w-100 rounded-4 shadow-lg overflow-hidden" 
+             style={{ maxWidth: '1000px', backgroundColor: '#222534', border: '1px solid #32364a' }}>
           
-          <div className="p-4 border-bottom border-secondary">
-            <h1 className="h4 text-light mb-0">Upload Template</h1>
+          {/* Header */}
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid #32364a' }}>
+            <h1 className="h6 text-light mb-0" style={{ fontWeight: '500' }}>Upload Template Collection</h1>
           </div>
 
+          {/* Grid Area */}
           <div className="p-4 p-md-5">
-            
-            <div className="d-flex flex-wrap justify-content-center gap-4">
-              {templates.map((tmpl) => (
-                <TemplateCard key={tmpl.id} name={tmpl.name} />
-              ))}
-            </div>
-            
-            <div className="d-flex justify-content-center mt-5">
-              <div 
-                style={{
-                  width: '16px',
-                  height: '16px',
-                  borderBottom: '2px solid #6c757d',
-                  borderRight: '2px solid #6c757d',
-                  transform: 'rotate(45deg)',
-                  cursor: 'pointer'
-                }}
-              ></div>
-            </div>
+            {loading && <div className="text-center text-light">Loading templates...</div>}
+            {error && <div className="text-center text-danger">{error}</div>}
 
+            {!loading && !error && (
+              <div className="d-flex flex-wrap justify-content-center gap-4">
+                {templates.map((tmpl) => (
+                  <TemplateCard 
+                    key={tmpl.id} 
+                    template={tmpl} 
+                    onClick={setSelectedTemplate} 
+                  />
+                ))}
+              </div>
+            )}
+            
+            {/* Scroll indicator (Down Arrow) */}
+            <div className="d-flex justify-content-center mt-5">
+              <div style={{
+                width: '12px', height: '12px',
+                borderBottom: '2px solid #5a5f73', borderRight: '2px solid #5a5f73',
+                transform: 'rotate(45deg)', cursor: 'pointer'
+              }}></div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-};
 
-export default TemplateGalleryPage;
+      {/* The Popup Modal */}
+      <TemplateModal 
+        template={selectedTemplate} 
+        onClose={() => setSelectedTemplate(null)} 
+      />
+    </Layout>
+  );
+}

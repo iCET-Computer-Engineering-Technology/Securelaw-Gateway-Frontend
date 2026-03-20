@@ -1,25 +1,19 @@
+// src/App.jsx
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import UploadTemplatePage from './pages/UploadTemplatePage'; 
+import TemplateGalleryPage from './pages/TemplateGalleryPage'; 
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './index.css';
-import TemplateGalleryPage from './pages/TemplateGalleryPage';
-function App() {
-
+export default function App() {
   return (
-    
-      <Router>
-        <div className="min-vh-100">
+    <BrowserRouter>
+      <Routes>
 
-          <Routes>
-            
-            <Route path="/" element={<TemplateGalleryPage />} />
-
-          </Routes>
-        </div>
-      </Router>
-
-    
+        <Route path="/" element={<Navigate to="/collection" />} />
+        
+        <Route path="/collection" element={<TemplateGalleryPage />} />
+        <Route path="/upload" element={<UploadTemplatePage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
-
-export default App
