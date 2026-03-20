@@ -61,14 +61,14 @@ export default function UploadTemplatePage() {
               
               <div className="row mb-4">
                 <div className="col-md-6 mb-3 mb-md-0 d-flex flex-column">
-                  <label className="small mb-2" style={{ color: 'var(--text-muted)' }}>Upload Document (PDF/Docx)</label>
+                  <label className="small mb-2 fw-medium" style={{ color: 'var(--text-muted)' }}>Upload Document (PDF/Docx)</label>
                   <label 
                     className="flex-grow-1 d-flex flex-column align-items-center justify-content-center rounded-3 position-relative"
                     style={{ 
                       backgroundColor: 'var(--bg-input)', 
-                      border: '1px dashed var(--border-color)', 
+                      border: '2px dashed var(--border-color)', 
                       cursor: 'pointer',
-                      minHeight: '140px',
+                      minHeight: '160px',
                       transition: 'background-color 0.3s ease'
                     }}
                   >
@@ -84,7 +84,7 @@ export default function UploadTemplatePage() {
                       <polyline points="17 8 12 3 7 8"></polyline>
                       <line x1="12" y1="3" x2="12" y2="15"></line>
                     </svg>
-                    <span className="small" style={{ color: 'var(--text-muted)' }}>
+                    <span className="small fw-medium text-center px-3" style={{ color: 'var(--text-muted)' }}>
                       {file ? file.name : "Click or drag to upload"}
                     </span>
                   </label>
@@ -92,32 +92,32 @@ export default function UploadTemplatePage() {
 
                 <div className="col-md-6 d-flex flex-column gap-3">
                   <div>
-                    <label className="small mb-2" style={{ color: 'var(--text-muted)' }}>Author Name</label>
+                    <label className="small mb-2 fw-medium" style={{ color: 'var(--text-muted)' }}>Author Name</label>
                     <input 
                       type="text" 
-                      className="form-control border-0" 
-                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)' }}
+                      className="form-control shadow-none" 
+                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       placeholder="e.g. Yasith"
                     />
                   </div>
                   <div>
-                    <label className="small mb-2" style={{ color: 'var(--text-muted)' }}>Template Name</label>
+                    <label className="small mb-2 fw-medium" style={{ color: 'var(--text-muted)' }}>Template Name</label>
                     <input 
                       type="text" 
-                      className="form-control border-0" 
-                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)' }}
+                      className="form-control shadow-none" 
+                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                       value={templateName}
                       onChange={(e) => setTemplateName(e.target.value)}
                       placeholder="e.g. Non-Disclosure Agreement"
                     />
                   </div>
                   <div>
-                    <label className="small mb-2" style={{ color: 'var(--text-muted)' }}>Template Category</label>
+                    <label className="small mb-2 fw-medium" style={{ color: 'var(--text-muted)' }}>Template Category</label>
                     <select 
-                      className="form-select border-0" 
-                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)' }}
+                      className="form-select shadow-none" 
+                      style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                     >
@@ -131,10 +131,10 @@ export default function UploadTemplatePage() {
               </div>
 
               <div className="mb-4">
-                <label className="small mb-2" style={{ color: 'var(--text-muted)' }}>Description</label>
+                <label className="small mb-2 fw-medium" style={{ color: 'var(--text-muted)' }}>Description</label>
                 <textarea 
-                  className="form-control border-0" 
-                  style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', minHeight: '100px' }}
+                  className="form-control shadow-none" 
+                  style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border-color)', minHeight: '100px' }}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Briefly describe the contents of this template..."
@@ -145,17 +145,18 @@ export default function UploadTemplatePage() {
                 <button 
                   type="button" 
                   className="btn" 
+                  onClick={() => navigate('/collection')}
                   style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="btn btn-primary px-4"
+                  className="btn btn-primary px-4 fw-medium"
                   disabled={status === 'uploading'}
                   style={{ backgroundColor: '#0d6efd', border: 'none' }}
                 >
-                  {status === 'uploading' ? 'Uploading...' : 'Upload'}
+                  {status === 'uploading' ? 'Uploading...' : 'Upload Document'}
                 </button>
               </div>
 

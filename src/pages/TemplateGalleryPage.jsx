@@ -26,12 +26,10 @@ export default function TemplateGalleryPage() {
   return (
     <Layout>
       <div className="w-100 mt-2 d-flex justify-content-center">
-        {/* Main Card Container using var(--bg-card) */}
         <div className="w-100 rounded-4 shadow-lg overflow-hidden" 
              style={{ maxWidth: '1000px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', transition: 'background-color 0.3s ease' }}>
           
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border-color)' }}>
-            {/* Using var(--text-main) so it flips between black and white */}
             <h1 className="h6 mb-0" style={{ fontWeight: '500', color: 'var(--text-main)' }}>Upload Template Collection</h1>
           </div>
 
