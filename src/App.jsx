@@ -1,10 +1,35 @@
+ feature/SLAG-42-user-management-dashboard
+import React from 'react'
+import UserManagement from './UserManagement' 
+
 import { useState } from 'react'
+dev
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import RegisterModal from './components/RegisterModal';
 import { Container, Navbar } from 'react-bootstrap';
 
 function App() {
+ feature/SLAG-42-user-management-dashboard
+  return (
+    <div className="App">
+    
+      <nav className="navbar navbar-dark bg-dark mb-4 p-3 shadow">
+        <div className="container">
+          <span className="navbar-brand mb-0 h1">SecureLaw Management System</span>
+        </div>
+      </nav>
+
+     
+      <main>
+        <UserManagement />
+      </main>
+
+     
+      <footer className="text-center mt-5 py-3 text-muted border-top">
+        <p>&copy; 2026 SecureLaw Gateway. All Rights Reserved.</p>
+      </footer>
+
 
   const [showModal, setShowModal] = useState(true);
 
@@ -23,8 +48,13 @@ function App() {
         show={showModal}
         handleClose={() => setShowModal(false)}
       />
+ dev
     </div>
   )
 }
 
+ feature/SLAG-42-user-management-dashboard
+export default App
+
 export default App;
+dev
