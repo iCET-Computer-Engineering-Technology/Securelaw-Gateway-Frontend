@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -8,14 +9,32 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
-                email: email,
-                password: password
-            });
+            
+            let ipAddress = "Unknown";
+            try {
+                const ipRes = await axios.get('https://api.ipify.org?format=json');
+                ipAddress = ipRes.data.ip;
+            } catch (err) {
+                console.error("Could not fetch IP", err);
+            }
 
-            console.log("Login Success:", response.data);
-            localStorage.setItem('token', response.data.token);
-            alert("Success! Welcome. " + response.data.name);
+            
+            const loginRequest = {
+                email: email,
+                password: password,
+                ipAddress: ipAddress,
+                deviceInfo: window.navigator.userAgent,
+                loginDate: new Date().toLocaleDateString(),
+                loginTime: new Date().toLocaleTimeString()
+            };
+
+            
+            const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
+
+            console.log("Login Success & Log Created:", response.data);
+
+            
+            alert("Success! Login data saved to database.");
 
         } catch (error) {
             console.error("Login Error:", error);
