@@ -1,16 +1,13 @@
- feature/SLAG-42-user-management-dashboard
 import React from 'react'
 import UserManagement from './UserManagement' 
 
 import { useState } from 'react'
-dev
 import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import RegisterModal from './components/RegisterModal';
 import { Container, Navbar } from 'react-bootstrap';
 
 function App() {
- feature/SLAG-42-user-management-dashboard
   return (
     <div className="App">
     
@@ -48,13 +45,13 @@ function App() {
         show={showModal}
         handleClose={() => setShowModal(false)}
       />
- dev
+
     </div>
   )
 }
 
- feature/SLAG-42-user-management-dashboard
+
 export default App
 
 export default App;
-dev
+
