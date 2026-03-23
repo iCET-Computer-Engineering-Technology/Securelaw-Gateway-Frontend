@@ -1,30 +1,57 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React from 'react'
+import UserManagement from './UserManagement' 
+
+import { useState } from 'react'
+import './App.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import NavigationBar from './components/NavigationBar';
-import LoginHistory from './components/LoginHistory';
-import PromptHistory from './components/PromptHistory';
-import RegistrationHistory from './components/RegistrationHistory';
-import Dashboard from './components/Dashboard';
+import RegisterModal from './components/RegisterModal';
+import { Container, Navbar } from 'react-bootstrap';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <NavigationBar />
-        <div className="container-fluid mt-4">
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/login-history" element={<LoginHistory />} />
-            <Route path="/prompt-history" element={<PromptHistory />} />
-            <Route path="/registration-history" element={<RegistrationHistory />} />
-          </Routes>
+    <div className="App">
+    
+      <nav className="navbar navbar-dark bg-dark mb-4 p-3 shadow">
+        <div className="container">
+          <span className="navbar-brand mb-0 h1">SecureLaw Management System</span>
         </div>
-      </div>
-    </Router>
-  );
+      </nav>
+
+     
+      <main>
+        <UserManagement />
+      </main>
+
+     
+      <footer className="text-center mt-5 py-3 text-muted border-top">
+        <p>&copy; 2026 SecureLaw Gateway. All Rights Reserved.</p>
+      </footer>
+
+
+  const [showModal, setShowModal] = useState(true);
+
+  return (
+    <div className="main-wrapper bg-white min-vh-100">
+
+      <Navbar expand="lg" className="navbar-custom py-3 px-4">
+        <Container>
+          <Navbar.Brand href="#" className="fw-bold navbar-brand-glow">
+            
+          </Navbar.Brand>
+        </Container>
+      </Navbar>
+
+      <RegisterModal
+        show={showModal}
+        handleClose={() => setShowModal(false)}
+      />
+
+    </div>
+  )
 }
 
+
+export default App
+
 export default App;
+
