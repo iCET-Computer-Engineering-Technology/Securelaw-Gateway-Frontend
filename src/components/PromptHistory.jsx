@@ -36,97 +36,86 @@ const PromptHistory = () => {
 
   const filterLogs = () => {
     let filtered = [...logs];
-
     if (searchTerm) {
       filtered = filtered.filter(log =>
         log.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.ipAddress.includes(searchTerm)
       );
     }
-
     setFilteredLogs(filtered);
     setCurrentPage(1);
   };
 
-  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
-  const handleViewPrompt = (log) => {
-    setSelectedPrompt(log);
-  };
+  const handleViewPrompt = (log) => setSelectedPrompt(log);
 
   if (loading) {
     return (
       <div className="text-center mt-5">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
+        <div className="spinner-border" style={{ color: 'var(--accent)' }} role="status"></div>
       </div>
     );
   }
 
+  const inputStyle = { backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)' };
+
   return (
     <div className="row">
       <div className="col-12 mb-4">
-        <h2 className="mb-4">
-          <i className="bi bi-chat-dots me-2"></i>
+        <h2 className="mb-4 fw-bold" style={{ color: 'var(--text-main)' }}>
+          <i className="bi bi-chat-dots me-2" style={{ color: 'var(--accent)' }}></i>
           Prompt History
         </h2>
       </div>
 
-      {/* Search */}
       <div className="col-12 mb-4">
-        <div className="card">
-          <div className="card-body">
-            <div className="row">
-              <div className="col-md-8">
+        <div className="glass-panel p-4">
+            <div className="row g-3">
+              <div className="col-md-9">
                 <div className="input-group">
-                  <span className="input-group-text bg-primary text-white">
-                    <i className="bi bi-search"></i>
-                  </span>
+                  <span className="input-group-text"><i className="bi bi-search"></i></span>
                   <input
                     type="text"
-                    className="form-control"
+                    className="form-control shadow-none"
+                    style={inputStyle}
                     placeholder="Search by name or IP..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
-              <div className="col-md-4">
+              <div className="col-md-3">
                 <button 
-                  className="btn btn-secondary w-100"
+                  className="btn w-100"
+                  style={{ backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)' }}
                   onClick={() => setSearchTerm('')}
                 >
-                  <i className="bi bi-eraser me-1"></i>
-                  Clear Search
+                  <i className="bi bi-eraser me-1"></i> Clear Search
                 </button>
               </div>
             </div>
-          </div>
         </div>
       </div>
 
-      {/* Prompt History Table */}
       <div className="col-12">
-        <div className="card">
-          <div className="card-header bg-dark text-white">
-            <h5 className="mb-0">Prompt Events</h5>
+        <div className="glass-panel">
+          <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Prompt Events</h5>
           </div>
-          <div className="card-body">
+          <div className="p-3">
             <div className="table-responsive">
-              <table className="table table-hover">
-                <thead className="table-dark">
+              <table className="table table-hover mb-0">
+                <thead>
                   <tr>
                     <th>#</th>
                     <th>Name</th>
                     <th>Date & Time</th>
                     <th>IP Address</th>
                     <th>Type</th>
-                    <th>Prompt Content</th>
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -134,42 +123,34 @@ const PromptHistory = () => {
                   {currentItems.length > 0 ? (
                     currentItems.map((log, index) => (
                       <tr key={log.id || index}>
-                        <td>{indexOfFirstItem + index + 1}</td>
-                        <td>
-                          <strong>{log.name}</strong>
-                        </td>
-                        <td>
+                        <td style={{ color: 'var(--text-muted)' }}>{indexOfFirstItem + index + 1}</td>
+                        <td className="fw-medium">{log.name}</td>
+                        <td style={{ color: 'var(--text-muted)' }}>
                           <i className="bi bi-clock me-1"></i>
                           {new Date(log.dateTime).toLocaleString()}
                         </td>
+                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
                         <td>
-                          <code>{log.ipAddress}</code>
-                        </td>
-                        <td>
-                          <span className="badge bg-info">
-                            <i className="bi bi-chat me-1"></i>
-                            {log.type}
+                          <span className="badge bg-info bg-opacity-75 text-dark">
+                            <i className="bi bi-chat me-1"></i> {log.type}
                           </span>
                         </td>
                         <td>
                           <button 
-                            className="btn btn-sm btn-outline-primary"
+                            className="btn btn-sm px-3 rounded-pill"
+                            style={{ backgroundColor: 'var(--bg-pill)', border: '1px solid var(--border)', color: 'var(--text-main)' }}
                             onClick={() => handleViewPrompt(log)}
                           >
-                            <i className="bi bi-eye me-1"></i>
-                            View Prompt
+                            <i className="bi bi-eye me-1"></i> View
                           </button>
-                        </td>
-                        <td>
-                          <span className="badge bg-secondary">{log.device}</span>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="7" className="text-center py-4">
-                        <i className="bi bi-chat-square-text fs-1 d-block text-muted mb-2"></i>
-                        No prompt records found
+                      <td colSpan="6" className="text-center py-5">
+                        <i className="bi bi-chat-square-text fs-1 d-block mb-2" style={{ color: 'var(--text-muted)' }}></i>
+                        <span style={{ color: 'var(--text-muted)' }}>No prompt records found</span>
                       </td>
                     </tr>
                   )}
@@ -177,100 +158,47 @@ const PromptHistory = () => {
               </table>
             </div>
 
-            {/* Pagination */}
             {totalPages > 1 && (
               <nav className="mt-4">
                 <ul className="pagination justify-content-center">
                   <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button className="page-link" onClick={() => setCurrentPage(1)}>
-                      First
-                    </button>
+                    <button className="page-link" style={inputStyle} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>Previous</button>
                   </li>
-                  <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link" 
-                      onClick={() => setCurrentPage(prev => prev - 1)}
-                    >
-                      Previous
-                    </button>
-                  </li>
-                  <li className="page-item active">
-                    <span className="page-link">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                  </li>
+                  {[...Array(totalPages)].map((_, i) => (
+                    <li key={i} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                      <button className="page-link" style={currentPage === i + 1 ? { backgroundColor: 'var(--accent)', color: '#fff', border: 'none' } : inputStyle} onClick={() => setCurrentPage(i + 1)}>
+                        {i + 1}
+                      </button>
+                    </li>
+                  ))}
                   <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link" 
-                      onClick={() => setCurrentPage(prev => prev + 1)}
-                    >
-                      Next
-                    </button>
-                  </li>
-                  <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
-                    <button 
-                      className="page-link" 
-                      onClick={() => setCurrentPage(totalPages)}
-                    >
-                      Last
-                    </button>
+                    <button className="page-link" style={inputStyle} onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}>Next</button>
                   </li>
                 </ul>
               </nav>
             )}
+            
           </div>
         </div>
       </div>
 
-      {/* Prompt Details Modal */}
       {selectedPrompt && (
-        <div className="modal fade show" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg">
-            <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
-                <h5 className="modal-title">
-                  <i className="bi bi-chat-quote me-2"></i>
-                  Prompt Details
-                </h5>
-                <button 
-                  type="button" 
-                  className="btn-close btn-close-white" 
-                  onClick={() => setSelectedPrompt(null)}
-                ></button>
+        <div className="modal fade show d-flex align-items-center justify-content-center" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(5px)' }}>
+          <div className="modal-dialog modal-lg w-100">
+            <div className="glass-panel" style={{ backgroundColor: 'var(--bg-card)' }}>
+              <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+                <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Prompt Details</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedPrompt(null)}></button>
               </div>
-              <div className="modal-body">
-                <div className="mb-3">
-                  <label className="fw-bold">User:</label>
-                  <p>{selectedPrompt.name}</p>
-                </div>
-                <div className="mb-3">
-                  <label className="fw-bold">Date & Time:</label>
-                  <p>{new Date(selectedPrompt.dateTime).toLocaleString()}</p>
-                </div>
-                <div className="mb-3">
-                  <label className="fw-bold">IP Address:</label>
-                  <p><code>{selectedPrompt.ipAddress}</code></p>
-                </div>
-                <div className="mb-3">
-                  <label className="fw-bold">Device:</label>
-                  <p>{selectedPrompt.device}</p>
-                </div>
-                <div className="mb-3">
-                  <label className="fw-bold">Prompt Content:</label>
-                  <div className="border rounded p-3 bg-light">
-                    <p className="mb-0">Sample prompt content would appear here...</p>
-                    {/* You would need to store actual prompt content in your database */}
-                  </div>
+              <div className="p-4" style={{ color: 'var(--text-main)' }}>
+                <p><strong>User:</strong> {selectedPrompt.name}</p>
+                <p><strong>IP:</strong> <code style={{ color: 'var(--accent)' }}>{selectedPrompt.ipAddress}</code></p>
+                <div className="p-3 rounded mt-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)' }}>
+                  Sample prompt content...
                 </div>
               </div>
-              <div className="modal-footer">
-                <button 
-                  type="button" 
-                  className="btn btn-secondary" 
-                  onClick={() => setSelectedPrompt(null)}
-                >
-                  Close
-                </button>
+              <div className="px-4 py-3 text-end" style={{ borderTop: '1px solid var(--border)' }}>
+                <button className="btn px-4" style={{ backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)' }} onClick={() => setSelectedPrompt(null)}>Close</button>
               </div>
             </div>
           </div>
