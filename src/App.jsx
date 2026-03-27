@@ -1,46 +1,61 @@
-import React, { useState } from 'react';
-import UserManagement from './UserManagement';
-import RegisterModal from './components/RegisterModal';
-import { Container, Navbar } from 'react-bootstrap';
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './App.css';
+// import './App.css';
+
+import { ThemeProvider } from './context/Themecontext';
+import Layout from './components/Layout';
+import NavigationBar from './components/NavigationBar'; 
+
+import TemplateGalleryPage from './pages/TemplateGalleryPage';
+import WorkspacePage from './pages/WorkspacePage';
+import UploadPage from './pages/UploadPage';
+import UserManagement from './UserManagement';
+
+import Login from './components/Login'; 
+import Dashboard from './components/Dashboard'; 
+import LoginHistory from './components/LoginHistory';
+import PromptHistory from './components/PromptHistory';
+import RegistrationHistory from './components/RegistrationHistory';
 
 function App() {
-  const [showModal, setShowModal] = useState(true);
-
   return (
-    <div className="main-wrapper bg-white min-vh-100">
-      {/* Navbar Section */}
-      <nav className="navbar navbar-dark bg-dark mb-4 p-3 shadow">
-        <div className="container">
-          <span className="navbar-brand mb-0 h1">SecureLaw Management System</span>
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="App min-vh-100">
+          
+          <Routes>
+            <Route path="/login" element={<Login />} />
+
+            <Route path="*" element={
+              <Layout>
+                
+                <NavigationBar /> 
+                
+                <div style={{ marginTop: '80px' }}>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/collection" replace />} />
+                    <Route path="/collection" element={<TemplateGalleryPage />} />
+                    <Route path="/workspace" element={<WorkspacePage />} />
+                    <Route path="/upload" element={<UploadPage />} />
+                    <Route path="/users" element={<UserManagement />} />
+                    
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/login-history" element={<LoginHistory />} />
+                    <Route path="/prompt-history" element={<PromptHistory />} />
+                    <Route path="/registration-history" element={<RegistrationHistory />} />
+
+                    <Route path="*" element={<Navigate to="/collection" replace />} />
+                  </Routes>
+                </div>
+                
+              </Layout>
+            } />
+          </Routes>
+
         </div>
-      </nav>
-
-      <Navbar expand="lg" className="navbar-custom py-3 px-4">
-        <Container>
-          <Navbar.Brand href="#" className="fw-bold navbar-brand-glow">
-            {/* Logo හෝ වෙනත් දෙයක් මෙතනට දැමිය හැක */}
-          </Navbar.Brand>
-        </Container>
-      </Navbar>
-
-      {/* Main Content Section */}
-      <main className="container">
-        <UserManagement />
-      </main>
-
-      {/* Footer Section */}
-      <footer className="text-center mt-5 py-3 text-muted border-top">
-        <p>&copy; 2026 SecureLaw Gateway. All Rights Reserved.</p>
-      </footer>
-
-      {/* Modal Section */}
-      <RegisterModal
-        show={showModal}
-        handleClose={() => setShowModal(false)}
-      />
-    </div>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

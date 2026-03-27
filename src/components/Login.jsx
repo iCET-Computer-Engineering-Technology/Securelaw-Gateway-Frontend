@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom'; 
+import { X } from 'lucide-react';
+import { motion } from 'framer-motion'; 
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const navigate = useNavigate(); 
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            
             let ipAddress = "Unknown";
             try {
                 const ipRes = await axios.get('https://api.ipify.org?format=json');
@@ -18,7 +20,6 @@ const Login = () => {
                 console.error("Could not fetch IP", err);
             }
 
-            
             const loginRequest = {
                 email: email,
                 password: password,
@@ -28,13 +29,10 @@ const Login = () => {
                 loginTime: new Date().toLocaleTimeString()
             };
 
-            
             const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
-
             console.log("Login Success & Log Created:", response.data);
 
-            
-            alert("Success! Login data saved to database.");
+            navigate('/dashboard');
 
         } catch (error) {
             console.error("Login Error:", error);
@@ -42,46 +40,90 @@ const Login = () => {
         }
     };
 
+    const inputStyle = { 
+        backgroundColor: 'var(--bg-input)', 
+        color: 'var(--text-main)', 
+        border: '1px solid var(--border)' 
+    };
+
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100" style={{ backgroundColor: '#f0f2f5' }}>
-            <div className="card p-4 shadow-lg text-center border-0" style={{ width: '450px', borderRadius: '30px' }}>
-                <div className="card-body">
-                    <h2 className="mb-2 fw-bold" style={{ color: '#000000', whiteSpace: 'nowrap', fontSize: '1.8rem' }}>
+        <div className="container d-flex align-items-center justify-content-center vh-100">
+
+            {/* NEW: Bouncy entrance for the Login Card */}
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="card p-4 border-0 position-relative"
+                style={{ 
+                    width: '450px', 
+                    borderRadius: '24px', 
+                    background: 'var(--bg-glass)',
+                    backdropFilter: 'blur(24px)', 
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid var(--border)', 
+                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
+                }}
+            >
+                {/* Close Button */}
+                <button 
+                    onClick={() => navigate('/collection')} 
+                    className="btn position-absolute d-flex align-items-center justify-content-center p-0" 
+                    style={{ 
+                        top: '15px', right: '15px', width: '32px', height: '32px', 
+                        borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', 
+                        border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 
+                    }} 
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.5)'} 
+                    onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                    title="Go back"
+                >
+                    <X size={18} />
+                </button>
+
+                <div className="card-body text-center mt-2">
+                    <h2 className="mb-2 fw-bold" style={{ color: 'var(--text-main)', whiteSpace: 'nowrap', fontSize: '1.8rem' }}>
                         SecureLaw AI Gateway
                     </h2>
-                    <p className="mb-4 fw-medium" style={{ color: '#000000' }}>Welcome Back</p>
+                    <p className="mb-4 fw-medium" style={{ color: 'var(--text-muted)' }}>Welcome Back</p>
                     
                     <form onSubmit={handleLogin}>
                         <div className="mb-3">
                             <input 
                                 type="email" 
-                                className="form-control p-3 shadow-sm" 
-                                placeholder="Email"
-                                style={{ borderRadius: '15px', border: '1px solid #cfe2ff' }}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
+                                className="form-control p-3 shadow-none" 
+                                placeholder="Email" 
+                                style={{ ...inputStyle, borderRadius: '12px' }} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                required 
                             />
                         </div>
                         <div className="mb-4">
                             <input 
                                 type="password" 
-                                className="form-control p-3 shadow-sm" 
-                                placeholder="Password"
-                                style={{ borderRadius: '15px', border: '1px solid #cfe2ff' }}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
+                                className="form-control p-3 shadow-none" 
+                                placeholder="Password" 
+                                style={{ ...inputStyle, borderRadius: '12px' }} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                required 
                             />
                         </div>
-                        <button 
+
+                        {/* iOS Squish Animation on Button */}
+                        <motion.button 
+                            whileTap={{ scale: 0.95 }} 
                             type="submit" 
-                            className="btn btn-primary w-100 p-3 fw-bold shadow-sm"
-                            style={{ borderRadius: '15px', backgroundColor: '#007bff', fontSize: '1.1rem' }}
+                            className="btn w-100 p-3 fw-bold" 
+                            style={{ 
+                                borderRadius: '12px', backgroundColor: 'var(--accent)', 
+                                color: '#fff', border: '1px solid var(--border)', fontSize: '1.1rem' 
+                            }}
                         >
                             LOGIN
-                        </button>
+                        </motion.button>
                     </form>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };
