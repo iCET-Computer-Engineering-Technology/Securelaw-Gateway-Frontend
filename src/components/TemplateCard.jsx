@@ -7,8 +7,8 @@ export default function TemplateCard({ template, onClick }) {
       onClick={() => onClick(template)}
       className="d-flex flex-column align-items-center justify-content-center p-3"
       style={{
-        width: '160px',       /* FIX: Shrunk back to a normal document size */
-        height: '210px',      /* FIX: Shrunk back to normal height */
+        width: '135px',       /* REDUCED: Made cards narrower */
+        height: '180px',      /* REDUCED: Made cards shorter */
         backgroundColor: 'var(--bg-pill)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
@@ -27,13 +27,14 @@ export default function TemplateCard({ template, onClick }) {
         e.currentTarget.style.backgroundColor = 'var(--bg-pill)';
       }}
     >
-      <FileText size={40} color="var(--text-main)" className="mb-3" strokeWidth={1.5} />
+      {/* Scaled the icon down slightly from 40 to 36 to match the smaller card */}
+      <FileText size={36} color="var(--text-main)" className="mb-3" strokeWidth={1.5} />
       
       <span 
         className="text-center px-2 w-100" 
         style={{ 
           color: 'var(--text-main)',
-          fontSize: '14px',   /* FIX: Normal font size */
+          fontSize: '13px',   /* Scaled the font down slightly */
           fontWeight: '600', 
           overflow: 'hidden', 
           textOverflow: 'ellipsis', 
@@ -41,7 +42,7 @@ export default function TemplateCard({ template, onClick }) {
           transition: 'color 0.3s ease'
         }}
       >
-        {template.name || 'Agreement'}
+        {template.name || template.title || 'Agreement'}
       </span>
     </div>
   );
