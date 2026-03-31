@@ -20,6 +20,9 @@ import PromptHistory from './components/PromptHistory';
 import RegistrationHistory from './components/RegistrationHistory';
 import RegisterModal from './components/RegisterModal';
 import ChatBox from './pages/ChatBox';
+import Securechat from './pages/Securechat';
+
+
 
 function App() {
   const [showModal, setShowModal] = useState(true);
@@ -53,6 +56,7 @@ function App() {
                       <Route path="/login-history" element={<LoginHistory />} />
                       <Route path="/prompt-history" element={<PromptHistory />} />
                       <Route path="/registration-history" element={<RegistrationHistory />} />
+                      <Route path="/messages" element={<Securechat />} />
                       
                       {/* 404 Redirect */}
                       <Route path="*" element={<Navigate to="/collection" replace />} />
