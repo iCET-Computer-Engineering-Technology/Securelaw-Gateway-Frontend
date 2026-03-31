@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// =====================================================
-// CONFIG - මෙතන ඔයාගේ backend URL දාන්න
-// =====================================================
+
+// CONFIG - replace with actual backend URL and auth system
+
 const BASE_URL = "http://localhost:8080";
 const CURRENT_USER_ID = 1; // Auth system ekn ganna - placeholder
 
@@ -14,9 +14,8 @@ const MOCK_CONTACTS = [
   { id: 5, name: "Dilani Jayawardena", role: "Case Manager", initials: "DJ", online: true },
 ];
 
-// =====================================================
+
 // API SERVICE
-// =====================================================
 const ChatAPI = {
   sendMessage: async (senderId, receiverId, messageContent) => {
     const res = await fetch(`${BASE_URL}/api/chat/send`, {
@@ -35,9 +34,8 @@ const ChatAPI = {
   },
 };
 
-// =====================================================
+
 // TIME FORMATTER
-// =====================================================
 const formatTime = (timestamp) => {
   if (!timestamp) return "";
   const date = new Date(timestamp);
@@ -55,10 +53,8 @@ const formatDate = (timestamp) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-// =====================================================
-// COMPONENTS
-// =====================================================
 
+// COMPONENTS
 function Avatar({ initials, size = 40, online = false }) {
   return (
     <div className="position-relative d-inline-block">
@@ -217,9 +213,8 @@ function EmptyState() {
   );
 }
 
-// =====================================================
+
 // MAIN COMPONENT
-// =====================================================
 export default function SecureChat() {
   const [selectedContact, setSelectedContact] = useState(null);
   const [messages, setMessages] = useState([]);
