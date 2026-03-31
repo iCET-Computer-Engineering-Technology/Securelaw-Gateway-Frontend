@@ -172,7 +172,7 @@ const UserManagement = () => {
                             <FaUserCheck className="me-2" style={{ color: 'var(--accent)' }} />
                             User Management
                         </h2>
-                        <p className="text-muted mb-0">
+                        <p className="text-main mb-0">
                             <MdSecurity className="me-1" />
                             Manage system users and their permissions
                         </p>

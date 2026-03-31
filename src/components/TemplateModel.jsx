@@ -87,10 +87,9 @@ export default function TemplateModel({ template, onClose, onDelete }) {
         </div>
 
         {/* RIGHT SIDE: DETAILS PANE */}
-        <div className="d-flex flex-column p-4 p-md-5" style={{ flex: '1 1 45%', overflowY: 'auto' }}>
+        <div className="d-flex flex-column p-4 p-md-5" style={{ flex: '1 1 45%', overflowY: 'auto', backgroundColor: 'var(--bg-card)' }}>
           
           <div className="mb-4 mt-2">
-            {/* Explicitly forcing var(--text-main) inline so Bootstrap can't override it */}
             <h2 className="mb-2" style={{ fontSize: '28px', fontWeight: '600', color: 'var(--text-main)' }}>
               {template.name}
             </h2>
@@ -108,11 +107,12 @@ export default function TemplateModel({ template, onClose, onDelete }) {
             </div>
           </div>
 
+          {/* ── CRITICAL FIX: Removed hardcoded white styles and used dynamic CSS variables ── */}
           <div className="mt-auto d-flex gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              className="btn flex-grow-1 py-3 fw-bold rounded-3"
-              style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.2)' }}
+              className="btn flex-grow-1 py-3 fw-bold rounded-3 shadow-sm"
+              style={{ backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)' }}
               onClick={handleUseTemplate}
             >
               Use Template
@@ -120,8 +120,8 @@ export default function TemplateModel({ template, onClose, onDelete }) {
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onDelete}
-              className="btn rounded-3 d-flex align-items-center justify-content-center px-4"
-              style={{ backgroundColor: 'rgba(255, 0, 0, 0.1)', border: '1px solid rgba(255, 0, 0, 0.2)', color: '#ff4d4d' }}
+              className="btn rounded-3 d-flex align-items-center justify-content-center px-4 shadow-sm"
+              style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)', border: '1px solid rgba(220, 53, 69, 0.2)', color: '#dc3545' }}
             >
               <Trash2 size={20} />
             </motion.button>
