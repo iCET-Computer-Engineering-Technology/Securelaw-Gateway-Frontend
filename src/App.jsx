@@ -65,6 +65,7 @@ function App() {
                       <Route path="/login-history" element={<LoginHistory />} />
                       <Route path="/prompt-history" element={<PromptHistory />} />
                       <Route path="/registration-history" element={<RegistrationHistory />} />
+                      <Route path="/messages" element={<Securechat />} />
                       
                       {/* 404 Catch-All Redirect */}
                       <Route path="*" element={<Navigate to="/collection" replace />} />
