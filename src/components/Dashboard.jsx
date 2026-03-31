@@ -7,7 +7,8 @@ const Dashboard = () => {
     loginCount: 0,
     promptCount: 0,
     registrationCount: 0,
-    recentLogs: []
+    recentLogs: [],
+    activeUsers: [] // ── NEW: Added state to hold active users
   });
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +25,26 @@ const Dashboard = () => {
       const promptCount = logs.filter(log => log.type === 'PROMPT').length;
       const registrationCount = logs.filter(log => log.type === 'REGISTRATION').length;
       
+      // ── NEW: Extract recent unique logins to show as "Active Users" ──
+      const loginLogs = logs.filter(log => log.type === 'LOGIN' || log.type === 'Admin');
+      const uniqueActiveUsers = [];
+      const seenNames = new Set();
+      
+      for (const log of loginLogs) {
+        if (!seenNames.has(log.name)) {
+          seenNames.add(log.name);
+          uniqueActiveUsers.push(log);
+        }
+        if (uniqueActiveUsers.length >= 5) break; // Limit to top 5 recent users
+      }
+
       setStats({
         totalLogs: logs.length,
         loginCount,
         promptCount,
         registrationCount,
-        recentLogs: logs.slice(0, 5)
+        recentLogs: logs.slice(0, 5),
+        activeUsers: uniqueActiveUsers // Store active users
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -107,8 +122,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="col-8">
-        <div className="glass-panel">
+      {/* ── UPDATED: Changed from col-8 to col-lg-8 so it sits next to the active users ── */}
+      <div className="col-lg-8 mb-4">
+        <div className="glass-panel h-100">
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
             <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Recent Activity</h5>
           </div>
@@ -144,6 +160,53 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* ── NEW: Active Users Panel added directly to the right! ── */}
+      <div className="col-lg-4 mb-4">
+        <div className="glass-panel h-100">
+          <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Active Users</h5>
+            <span className="badge bg-success bg-opacity-75 d-flex align-items-center gap-1">
+              <span className="rounded-circle bg-white" style={{ width: '6px', height: '6px' }}></span> Online
+            </span>
+          </div>
+          <div className="p-3">
+            {stats.activeUsers.length > 0 ? (
+              <ul className="list-group list-group-flush bg-transparent">
+                {stats.activeUsers.map((user, index) => (
+                  <li key={index} className="list-group-item bg-transparent d-flex justify-content-between align-items-center px-2 py-3" style={{ borderBottom: '1px solid var(--border)', borderTop: 'none' }}>
+                    <div className="d-flex align-items-center gap-3">
+                      
+                      {/* Avatar with Green Status Dot */}
+                      <div className="position-relative">
+                        <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style={{ width: '42px', height: '42px', backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', fontSize: '1.2rem' }}>
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style={{ width: '12px', height: '12px', transform: 'translate(20%, 20%)' }}></span>
+                      </div>
+
+                      {/* Name and Time */}
+                      <div>
+                        <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name}</h6>
+                        <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                          Logged in at {new Date(user.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </small>
+                      </div>
+
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center py-5">
+                 <i className="bi bi-people fs-1 d-block mb-2" style={{ color: 'var(--text-muted)' }}></i>
+                 <span style={{ color: 'var(--text-muted)' }}>No active users right now.</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom'; 
-import { X } from 'lucide-react';
+import { X, ShieldCheck, BrainCircuit, FileText } from 'lucide-react'; 
 import { motion } from 'framer-motion'; 
 
 const Login = () => {
@@ -40,90 +40,145 @@ const Login = () => {
         }
     };
 
-    const inputStyle = { 
-        backgroundColor: 'var(--bg-input)', 
-        color: 'var(--text-main)', 
-        border: '1px solid var(--border)' 
-    };
-
     return (
-        <div className="container d-flex align-items-center justify-content-center vh-100">
+        <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
+            
+            {/* ── INTERNAL CSS: Forces placeholders to be perfectly visible in Light/Dark mode ── */}
+            <style>
+                {`
+                .login-input {
+                    background-color: transparent !important;
+                    border: 2px solid var(--border) !important;
+                    color: var(--text-main) !important;
+                    transition: all 0.2s ease !important;
+                }
+                .login-input:focus {
+                    border-color: var(--accent) !important;
+                    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+                    background-color: var(--bg-glass) !important;
+                }
+                .login-input::placeholder {
+                    color: var(--text-muted) !important;
+                    opacity: 0.9 !important;
+                }
+                `}
+            </style>
 
-            {/* NEW: Bouncy entrance for the Login Card */}
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                className="card p-4 border-0 position-relative"
-                style={{ 
-                    width: '450px', 
-                    borderRadius: '24px', 
-                    background: 'var(--bg-glass)',
-                    backdropFilter: 'blur(24px)', 
-                    WebkitBackdropFilter: 'blur(24px)',
-                    border: '1px solid var(--border)', 
-                    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
-                }}
-            >
-                {/* Close Button */}
+            {/* ── LEFT SIDE: Enterprise Branding ── */}
+            <div className="d-none d-lg-flex flex-column justify-content-center p-5 position-relative" style={{ width: '55%', borderRight: '1px solid var(--border)' }}>
+                
+                <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(13, 110, 253, 0.08) 0%, rgba(0,0,0,0) 70%)', borderRadius: '50%', pointerEvents: 'none' }}></div>
+
+                <div style={{ zIndex: 1, maxWidth: '600px', margin: '0 auto' }}>
+                    
+                    <div className="d-flex align-items-center gap-3 mb-5">
+                        <div className="p-3 rounded-4 shadow-sm d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-pill)', border: '1px solid var(--border)' }}>
+                           <img src="/securelawicon.svg" alt="SecureLaw Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+                        </div>
+                        <h1 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '2.5rem', letterSpacing: '-1px' }}>
+                            SecureLaw <span style={{ color: 'var(--accent)' }}>AI</span>
+                        </h1>
+                    </div>
+
+                    <h2 className="fw-bold mb-4" style={{ color: 'var(--text-main)', fontSize: '3rem', lineHeight: '1.2', letterSpacing: '-0.5px' }}>
+                        The Gateway to <br/>Legal Intelligence.
+                    </h2>
+                    <p className="mb-5" style={{ color: 'var(--text-muted)', fontSize: '1.15rem', lineHeight: '1.6' }}>
+                        Access your immutable audit logs, manage secure templates, and utilize advanced AI prompting in one unified, enterprise-grade environment.
+                    </p>
+
+                    <div className="d-flex flex-column gap-4 mt-2">
+                        <div className="d-flex align-items-center gap-4">
+                            <div className="p-2 rounded-circle shadow-sm" style={{ backgroundColor: 'rgba(25, 135, 84, 0.1)', color: '#198754', border: '1px solid rgba(25, 135, 84, 0.2)' }}><ShieldCheck size={22} /></div>
+                            <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: '500' }}>Enterprise-Grade Compliance</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-4">
+                            <div className="p-2 rounded-circle shadow-sm" style={{ backgroundColor: 'rgba(13, 110, 253, 0.1)', color: '#0d6efd', border: '1px solid rgba(13, 110, 253, 0.2)' }}><BrainCircuit size={22} /></div>
+                            <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: '500' }}>AI-Powered Analytics</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-4">
+                            <div className="p-2 rounded-circle shadow-sm" style={{ backgroundColor: 'rgba(13, 202, 240, 0.1)', color: '#0dcaf0', border: '1px solid rgba(13, 202, 240, 0.2)' }}><FileText size={22} /></div>
+                            <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: '500' }}>Secure Template Management</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {/* ── RIGHT SIDE: Form Seamlessly Floating on Background ── */}
+            <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
+                
+                {/* ── MOVED CLOSE BUTTON TO TOP RIGHT CORNER ── */}
                 <button 
                     onClick={() => navigate('/collection')} 
                     className="btn position-absolute d-flex align-items-center justify-content-center p-0" 
                     style={{ 
-                        top: '15px', right: '15px', width: '32px', height: '32px', 
+                        top: '30px', right: '30px', width: '40px', height: '40px', 
                         borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', 
                         border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 
                     }} 
-                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.5)'} 
+                    onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} 
                     onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                     title="Go back"
                 >
-                    <X size={18} />
+                    <X size={20} />
                 </button>
 
-                <div className="card-body text-center mt-2">
-                    <h2 className="mb-2 fw-bold" style={{ color: 'var(--text-main)', whiteSpace: 'nowrap', fontSize: '1.8rem' }}>
-                        SecureLaw AI Gateway
-                    </h2>
-                    <p className="mb-4 fw-medium" style={{ color: 'var(--text-muted)' }}>Welcome Back</p>
+                {/* ── REMOVED CARD PANEL STYLES: Now it floats cleanly ── */}
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    style={{ width: '100%', maxWidth: '400px' }}
+                >
+                    <div className="text-center mb-5">
+                        <h2 className="mb-2 fw-bold" style={{ color: 'var(--text-main)', fontSize: '2.2rem' }}>
+                            Welcome Back
+                        </h2>
+                        <p className="fw-medium" style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>
+                            Sign in to your SecureLaw account
+                        </p>
+                    </div>
                     
                     <form onSubmit={handleLogin}>
-                        <div className="mb-3">
+                        {/* ── ADDED LABELS AND CLEAN OUTLINED INPUTS ── */}
+                        <div className="mb-4 text-start">
+                            <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Email Address</label>
                             <input 
                                 type="email" 
-                                className="form-control p-3 shadow-none" 
-                                placeholder="Email" 
-                                style={{ ...inputStyle, borderRadius: '12px' }} 
+                                className="form-control p-3 shadow-none login-input" 
+                                placeholder="name@company.com" 
+                                style={{ borderRadius: '12px' }} 
                                 onChange={(e) => setEmail(e.target.value)} 
                                 required 
                             />
                         </div>
-                        <div className="mb-4">
+                        <div className="mb-5 text-start">
+                            <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Password</label>
                             <input 
                                 type="password" 
-                                className="form-control p-3 shadow-none" 
-                                placeholder="Password" 
-                                style={{ ...inputStyle, borderRadius: '12px' }} 
+                                className="form-control p-3 shadow-none login-input" 
+                                placeholder="Enter your password" 
+                                style={{ borderRadius: '12px' }} 
                                 onChange={(e) => setPassword(e.target.value)} 
                                 required 
                             />
                         </div>
 
-                        {/* iOS Squish Animation on Button */}
                         <motion.button 
-                            whileTap={{ scale: 0.95 }} 
+                            whileTap={{ scale: 0.96 }} 
                             type="submit" 
-                            className="btn w-100 p-3 fw-bold" 
+                            className="btn w-100 p-3 fw-bold shadow-sm" 
                             style={{ 
                                 borderRadius: '12px', backgroundColor: 'var(--accent)', 
-                                color: '#fff', border: '1px solid var(--border)', fontSize: '1.1rem' 
+                                color: '#fff', border: 'none', fontSize: '1.1rem' 
                             }}
                         >
                             LOGIN
                         </motion.button>
                     </form>
-                </div>
-            </motion.div>
+                </motion.div>
+            </div>
         </div>
     );
 };
