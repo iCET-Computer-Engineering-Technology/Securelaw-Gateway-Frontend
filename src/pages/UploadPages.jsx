@@ -3,6 +3,22 @@ import axios from 'axios';
 import { FileUp, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion'; 
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+const USE_CREDENTIALS = import.meta.env.VITE_USE_CREDENTIALS === 'true';
+
+const getAuthToken = () =>
+  localStorage.getItem('authToken') ||
+  sessionStorage.getItem('authToken') ||
+  localStorage.getItem('token') ||
+  sessionStorage.getItem('token');
+
+const getCookieValue = (name) => {
+  const row = document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith(`${name}=`));
+  return row ? decodeURIComponent(row.split('=').slice(1).join('=')) : '';
+};
+
 // Function name updated to UploadPages to match your file name perfectly!
 export default function UploadPages({ onClose, onUploadSuccess }) {
   const [file, setFile] = useState(null);
@@ -31,9 +47,92 @@ export default function UploadPages({ onClose, onUploadSuccess }) {
     setStatus(null);
 
     try {
-      await axios.post('http://localhost:8080/api/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      const token = getAuthToken();
+      const csrfToken = getCookieValue('XSRF-TOKEN') || getCookieValue('CSRF-TOKEN');
+
+      const baseHeaders = {
+        'Content-Type': 'multipart/form-data',
+        ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {})
+      };
+
+      const endpointCandidates = [
+        `${API_BASE_URL}/api/upload`,
+        `${API_BASE_URL}/api/templates/upload`,
+        `${API_BASE_URL}/api/templates`,
+      ];
+
+      const requestCandidates = [];
+      requestCandidates.push({
+        label: 'no-auth',
+        config: {
+          headers: baseHeaders,
+          withCredentials: false,
+        }
       });
+      if (token) {
+        requestCandidates.push({
+          label: 'bearer-token',
+          config: {
+            headers: { ...baseHeaders, Authorization: `Bearer ${token}` },
+            withCredentials: false,
+          }
+        });
+      }
+      if (USE_CREDENTIALS) {
+        requestCandidates.push({
+          label: 'cookie-session',
+          config: {
+            headers: baseHeaders,
+            withCredentials: true,
+          }
+        });
+        if (token) {
+          requestCandidates.push({
+            label: 'token-and-cookie',
+            config: {
+              headers: { ...baseHeaders, Authorization: `Bearer ${token}` },
+              withCredentials: true,
+            }
+          });
+        }
+      }
+
+      let uploaded = false;
+      let lastError = null;
+      const attemptErrors = [];
+
+      for (const endpoint of endpointCandidates) {
+        for (const requestAttempt of requestCandidates) {
+          try {
+            await axios.post(endpoint, data, { ...requestAttempt.config, timeout: 30000 });
+            uploaded = true;
+            break;
+          } catch (err) {
+            const statusCode = err?.response?.status;
+            const backendMessage =
+              err?.response?.data?.message ||
+              err?.response?.data?.error ||
+              (typeof err?.response?.data === 'string' ? err.response.data : err?.message);
+
+            lastError = err;
+            attemptErrors.push(
+              `${requestAttempt.label} @ ${endpoint} => ${statusCode || 'NO_STATUS'} ${backendMessage || ''}`.trim()
+            );
+
+            if (statusCode && statusCode !== 403 && statusCode !== 404) {
+              throw err;
+            }
+          }
+        }
+        if (uploaded) break;
+      }
+
+      if (!uploaded) {
+        const error = new Error('Upload request was rejected.');
+        error.attemptDetails = attemptErrors;
+        throw lastError || error;
+      }
+
       setStatus({ type: 'success', message: 'Template successfully saved!' });
       
       // Wait 1.5s to show success, then refresh the grid and close the popup
@@ -42,7 +141,18 @@ export default function UploadPages({ onClose, onUploadSuccess }) {
         if (onClose) onClose();
       }, 1500);
     } catch (error) {
-      setStatus({ type: 'error', message: 'Failed to save template.' });
+      const backendMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        (typeof error?.response?.data === 'string' ? error.response.data : null) ||
+        (Array.isArray(error?.attemptDetails) ? error.attemptDetails.join(' | ') : null);
+      const statusCode = error?.response?.status;
+      setStatus({
+        type: 'error',
+        message: backendMessage
+          ? `${backendMessage}${statusCode ? ` (HTTP ${statusCode})` : ''}`
+          : `Failed to save template${statusCode ? ` (HTTP ${statusCode})` : ''}.`
+      });
     } finally {
       setLoading(false);
     }

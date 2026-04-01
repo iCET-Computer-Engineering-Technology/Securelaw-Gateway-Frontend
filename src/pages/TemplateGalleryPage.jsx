@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import TemplateCard from '../components/TemplateCard';
 import TemplateModel from '../components/TemplateModel'; 
 import UploadPage from '../pages/UploadPages'; 
-import Layout from '../components/Layout'; 
 
 export default function TemplateGalleryPage() {
   const [templates, setTemplates] = useState([]);
@@ -56,7 +55,7 @@ export default function TemplateGalleryPage() {
   };
 
   return (
-    <Layout>
+    <>
       {/* ── FIXED HEIGHT MATH: Changed from 100px to 90px to perfectly match Navbar + Padding ── */}
       <div className="d-flex flex-column w-100 mx-auto" style={{ maxWidth: '1280px', height: 'calc(100vh - 90px)', overflow: 'hidden', color: 'var(--text-main)' }}>
         
@@ -123,6 +122,6 @@ export default function TemplateGalleryPage() {
           />
         )}
       </AnimatePresence>
-    </Layout>
+    </>
   );
 }

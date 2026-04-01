@@ -269,23 +269,107 @@ main.flex-grow-1 {
   flex-shrink: 0; padding: 20px; display: flex; justify-content: center; background: transparent;
 }
 
+.composer-template-preview {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  box-shadow: var(--shadow-premium);
+}
+
+.composer-template-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--bg-pill);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.composer-template-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.composer-template-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.composer-template-type {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.composer-template-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.composer-template-remove:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+
 /* Ask Bar (Gemini Pill) */
 .ask-bar-wrapper {
-  width: 100%; max-width: 800px; display: flex; align-items: center;
+  width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: stretch; gap: 8px;
   background: var(--bg-input); border: 1px solid var(--border);
-  border-radius: 28px; padding: 0 14px 0 24px; height: 56px;
+  border-radius: 20px; padding: 10px 12px 10px 12px; min-height: 62px;
   box-shadow: var(--shadow-premium); transition: border-color 0.2s, box-shadow 0.2s;
 }
 .ask-bar-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
-.ask-bar-input { flex: 1; background: transparent; border: none; outline: none; color: var(--text-main); font-size: 15px; }
+.ask-bar-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+.ask-bar-input {
+  flex: 1; background: transparent; border: none; outline: none; color: var(--text-main);
+  font-size: 15px; line-height: 1.45; min-height: 24px; max-height: 180px; padding: 4px 6px;
+  resize: none; overflow-y: auto;
+}
 .ask-bar-input::placeholder { color: var(--text-muted); }
 
 .ask-bar-send {
   background: var(--bg-pill); border: 1px solid var(--border);
   border-radius: 50%; color: var(--text-main); width: 38px; height: 38px;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.18s;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.18s; flex-shrink: 0;
 }
 .ask-bar-send:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.composer-template-preview-inline {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: var(--bg-pill);
+  border-radius: 12px;
+  box-shadow: none;
+}
 
 .sidebar-toggle {
   position: absolute; left: 15px; top: 15px; z-index: 10;

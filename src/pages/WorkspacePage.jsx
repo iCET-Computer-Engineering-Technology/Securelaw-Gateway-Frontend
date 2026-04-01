@@ -4,7 +4,6 @@ import { ArrowLeft, Save, Download, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import mammoth from 'mammoth'; 
-import Layout from '../components/Layout'; 
 
 export default function WorkspacePage() {
     const [activeTemplate, setActiveTemplate] = useState(null);
@@ -51,13 +50,11 @@ export default function WorkspacePage() {
 
     if (!activeTemplate) {
         return (
-            <Layout>
-                <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
-                    <h2 style={{ color: 'var(--text-main)' }}>No active workspace found.</h2>
-                    <p style={{ color: 'var(--text-muted)' }}>Please select a template from the gallery to start working.</p>
-                    <button className="btn btn-primary mt-3 px-4 py-2 rounded-3" onClick={() => navigate('/collection')} >Go to Gallery</button>
-                </div>
-            </Layout>
+            <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '60vh' }}>
+                <h2 style={{ color: 'var(--text-main)' }}>No active workspace found.</h2>
+                <p style={{ color: 'var(--text-muted)' }}>Please select a template from the gallery to start working.</p>
+                <button className="btn btn-primary mt-3 px-4 py-2 rounded-3" onClick={() => navigate('/collection')} >Go to Gallery</button>
+            </div>
         );
     }
 
@@ -65,7 +62,6 @@ export default function WorkspacePage() {
     const editorBgColor = isPdf ? '#e2e4e9' : 'var(--bg-input)';
 
     return (
-        <Layout>
             <div className="container-fluid py-4" style={{ height: 'calc(100vh - 80px)' }}>
                 {/* Header animation */}
                 <motion.div 
@@ -162,6 +158,5 @@ export default function WorkspacePage() {
                     </motion.div>
                 </motion.div>
             </div>
-        </Layout>
     );
 }

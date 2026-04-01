@@ -4,6 +4,47 @@ import { useNavigate } from 'react-router-dom';
 import { X, ShieldCheck, BrainCircuit, FileText } from 'lucide-react'; 
 import { motion } from 'framer-motion'; 
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+const USE_CREDENTIALS = import.meta.env.VITE_USE_CREDENTIALS === 'true';
+
+const resolveTokenFromResponse = (response) => {
+    const data = response?.data ?? {};
+    if (typeof data === 'string' && data.trim()) return data.trim();
+
+    const tokenFromBody =
+        data?.token ||
+        data?.accessToken ||
+        data?.access_token ||
+        data?.jwt ||
+        data?.jwtToken ||
+        data?.authToken ||
+        data?.data?.token ||
+        data?.data?.accessToken ||
+        data?.data?.access_token ||
+        data?.data?.jwt ||
+        data?.data?.jwtToken;
+
+    const authHeader = response?.headers?.authorization || response?.headers?.Authorization;
+    const tokenFromHeader = typeof authHeader === 'string'
+        ? authHeader.replace(/^Bearer\s+/i, '').trim()
+        : '';
+
+    return tokenFromBody || tokenFromHeader || null;
+};
+
+const getBackendErrorMessage = (error) => {
+    const statusCode = error?.response?.status;
+    const payload = error?.response?.data;
+    const message =
+        payload?.message ||
+        payload?.error ||
+        payload?.details ||
+        (typeof payload === 'string' ? payload : null) ||
+        error?.message;
+
+    return `${message || 'Login failed.'}${statusCode ? ` (HTTP ${statusCode})` : ''}`;
+};
+
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -29,14 +70,39 @@ const Login = () => {
                 loginTime: new Date().toLocaleTimeString()
             };
 
-            const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
+            const requestConfigs = { withCredentials: USE_CREDENTIALS };
+            const loginPayloadCandidates = [
+                loginRequest,
+                { email, password },
+                { username: email, password },
+            ];
+
+            let response = null;
+            let lastError = null;
+
+            for (const payload of loginPayloadCandidates) {
+                try {
+                    response = await axios.post(`${API_BASE_URL}/api/auth/login`, payload, requestConfigs);
+                    break;
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+
+            if (!response) throw lastError || new Error('Login failed');
             console.log("Login Success & Log Created:", response.data);
+
+            const token = resolveTokenFromResponse(response);
+            if (token) {
+                localStorage.setItem('authToken', token);
+                sessionStorage.setItem('authToken', token);
+            }
 
             navigate('/dashboard');
 
         } catch (error) {
             console.error("Login Error:", error);
-            alert("Invalid email or password! Please try again.");
+            alert(getBackendErrorMessage(error));
         }
     };
 

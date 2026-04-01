@@ -22,6 +22,7 @@ import RegistrationHistory from './components/RegistrationHistory';
 import UserManagement from './UserManagement'; 
 import ChatBox from './pages/ChatBox';         // Your new AI Chat page
 import RegisterForm from './components/RegisterForm';
+import Securechat from './pages/Securechat';
 
 function App() {
   // State for the global RegisterModal

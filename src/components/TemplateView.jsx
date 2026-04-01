@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import TemplateSearchBar from "./TemplateSearchBar";
 
-const TemplateView = ({ templates, onSelect, selectedId, onResults }) => {
+const TemplateView = ({ templates, onSelect, selectedId, onResults, isLoading = false, error = "", onRefresh, onSearchError }) => {
   const [isOpen, setIsOpen] = useState(true);
 
   const handleKeyDown = (e, template) => {
@@ -40,13 +40,42 @@ const TemplateView = ({ templates, onSelect, selectedId, onResults }) => {
         }}
       >
         <div className="sidebar-header px-2 pt-2 pb-1" style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: 'var(--text-muted)' }}>
-          TEMPLATES
+          <div className="d-flex align-items-center justify-content-between">
+            <span>TEMPLATES</span>
+            {onRefresh && (
+              <button
+                type="button"
+                onClick={onRefresh}
+                className="btn btn-sm p-0"
+                style={{ color: "var(--text-muted)", fontSize: "10px", border: "none", background: "transparent" }}
+                title="Refresh templates"
+              >
+                Refresh
+              </button>
+            )}
+          </div>
         </div>
         
-        <TemplateSearchBar onResults={onResults} />
+        <TemplateSearchBar onResults={onResults} onError={onSearchError} />
 
         <div className="template-grid mt-2">
-          {templates.length === 0 ? (
+          {isLoading && templates.length === 0 ? (
+            <p className="no-templates text-center w-100 mt-4" style={{ gridColumn: '1 / -1' }}>Loading templates...</p>
+          ) : error && templates.length === 0 ? (
+            <div className="text-center w-100 mt-4 px-2" style={{ gridColumn: "1 / -1" }}>
+              <p className="mb-2" style={{ fontSize: "12px", color: "#dc3545" }}>{error}</p>
+              {onRefresh && (
+                <button
+                  type="button"
+                  onClick={onRefresh}
+                  className="btn btn-sm"
+                  style={{ backgroundColor: "var(--bg-input)", color: "var(--text-main)", border: "1px solid var(--border)" }}
+                >
+                  Try again
+                </button>
+              )}
+            </div>
+          ) : templates.length === 0 ? (
             <p className="no-templates text-center w-100 mt-4" style={{ gridColumn: '1 / -1' }}>No templates found.</p>
           ) : (
             templates.map((template) => (
