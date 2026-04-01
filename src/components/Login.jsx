@@ -29,7 +29,9 @@ const resolveTokenFromResponse = (response) => {
         ? authHeader.replace(/^Bearer\s+/i, '').trim()
         : '';
 
-    return tokenFromBody || tokenFromHeader || null;
+    const raw = tokenFromBody || tokenFromHeader || null;
+    if (!raw || typeof raw !== 'string') return raw;
+    return raw.replace(/^Bearer\s+/i, '').trim();
 };
 
 const getBackendErrorMessage = (error) => {
