@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -18,11 +18,11 @@ import Dashboard from './components/Dashboard';
 import LoginHistory from './components/LoginHistory';
 import PromptHistory from './components/PromptHistory';
 import RegistrationHistory from './components/RegistrationHistory';
-import RegisterModal from './components/RegisterModal';
 import ChatBox from './pages/ChatBox';
 
 function App() {
-  const [showModal, setShowModal] = useState(true);
+  
+  
 
   return (
     <ThemeProvider>
@@ -30,20 +30,21 @@ function App() {
         <div className="App min-vh-100 d-flex flex-column">
           
           <Routes>
-            {/* Login route (Layout එකෙන් තොරව) */}
+            
             <Route path="/login" element={<Login />} />
 
-            {/* අනිත් සියලුම routes Layout එක ඇතුළේ */}
+            
             <Route
               path="*"
               element={
                 <Layout>
                   <NavigationBar />
                   
-                  {/* Content Area */}
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
+                      {/* Default Route */}
                       <Route path="/" element={<Navigate to="/collection" replace />} />
+                      
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />
                       <Route path="/upload" element={<UploadPage />} />
@@ -59,16 +60,8 @@ function App() {
                     </Routes>
                   </main>
 
-                  {/* Modal components */}
-                  <RegisterModal
-                    show={showModal}
-                    handleClose={() => setShowModal(false)}
-                  />
-
-                  {/* Global Footer */}
-                  <footer className="text-center mt-auto py-3 text-muted border-top">
-                    <p>&copy; 2026 SecureLaw Gateway. All Rights Reserved.</p>
-                  </footer>
+                  
+                  
                 </Layout>
               }
             />

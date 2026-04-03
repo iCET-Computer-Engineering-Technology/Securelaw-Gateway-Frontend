@@ -1,15 +1,14 @@
 import api from "../api/axiosConfig"; 
 
-
 const ADMIN_API_URL = "http://localhost:8080/api/v1/admin"; 
 
 class AuditLogService {
 
   
-   
   async getAllLogs() {
     try {
       
+      const response = await api.get(`${ADMIN_API_URL}/stats`);
       return response.data; 
     } catch (error) {
       console.error("Error fetching dashboard stats:", error);
@@ -18,8 +17,6 @@ class AuditLogService {
   }
 
   
-  
-   
   async getLogsByType(type) {
     try {
       const response = await api.get(`${ADMIN_API_URL}/logs/type/${type}`);
@@ -31,8 +28,6 @@ class AuditLogService {
   }
 
   
-   
-   
   async getLogsByName(name) {
     try {
       const response = await api.get(`${ADMIN_API_URL}/logs/name/${name}`);
@@ -44,8 +39,6 @@ class AuditLogService {
   }
 
   
-   
-   
   async saveLog(logData) {
     try {
       const response = await api.post(`${ADMIN_API_URL}/save`, logData);
@@ -56,6 +49,5 @@ class AuditLogService {
     }
   }
 }
-
 
 export default new AuditLogService();
