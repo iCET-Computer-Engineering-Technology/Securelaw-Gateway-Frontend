@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuditLogService from '../services/AuditLogService';
 
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalLogs: 0,
