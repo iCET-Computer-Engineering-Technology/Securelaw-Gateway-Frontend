@@ -7,7 +7,7 @@ const Dashboard = () => {
     loginCount: 0,
     promptCount: 0,
     registrationCount: 0,
-    recentLogs: []
+    recentLogins: [] 
   });
   const [loading, setLoading] = useState(true);
 
@@ -18,18 +18,16 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const logs = await AuditLogService.getAllLogs();
       
-      const loginCount = logs.filter(log => log.type === 'LOGIN').length;
-      const promptCount = logs.filter(log => log.type === 'PROMPT').length;
-      const registrationCount = logs.filter(log => log.type === 'REGISTRATION').length;
+      const data = await AuditLogService.getAllLogs();
+      
       
       setStats({
-        totalLogs: logs.length,
-        loginCount,
-        promptCount,
-        registrationCount,
-        recentLogs: logs.slice(0, 5)
+        totalLogs: data.totalLogs,
+        loginCount: data.loginEvents,
+        promptCount: data.promptEvents,
+        registrationCount: data.registrations,
+        recentLogins: data.recentLogins
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -55,6 +53,7 @@ const Dashboard = () => {
         </h2>
       </div>
 
+      {/* Stats Cards */}
       <div className="col-md-3 mb-4">
         <div className="glass-panel h-100 p-4 position-relative overflow-hidden">
           <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#0d6efd' }}></div>
@@ -107,7 +106,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="col-8">
+      {/* Recent Activity Table */}
+      <div className="col-12">
         <div className="glass-panel">
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
             <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Recent Activity</h5>
@@ -118,26 +118,31 @@ const Dashboard = () => {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Date & Time</th>
-                    <th>Type</th>
-                    <th>IP Address</th>
-                    <th>Device</th>
+                    <th>Role</th>
+                    <th>Date</th>
+                    <th>Time</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentLogs.map((log, index) => (
+                  {stats.recentLogins && stats.recentLogins.map((log, index) => (
                     <tr key={index}>
                       <td className="fw-medium">{log.name}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{new Date(log.dateTime).toLocaleString()}</td>
                       <td>
-                        <span className={`badge bg-${getBadgeColor(log.type)} bg-opacity-75`}>
-                          {log.type}
+                        <span className="badge bg-primary bg-opacity-75">
+                          {log.role}
                         </span>
                       </td>
-                      <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
-                      <td style={{ color: 'var(--text-muted)' }}>{log.device}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.date}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.time}</td>
                     </tr>
                   ))}
+                  {(!stats.recentLogins || stats.recentLogins.length === 0) && (
+                    <tr>
+                      <td colSpan="4" className="text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                        No recent activity found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -146,15 +151,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-};
-
-const getBadgeColor = (type) => {
-  switch(type) {
-    case 'LOGIN': return 'success';
-    case 'PROMPT': return 'info';
-    case 'REGISTRATION': return 'warning';
-    default: return 'secondary';
-  }
 };
 
 export default Dashboard;
