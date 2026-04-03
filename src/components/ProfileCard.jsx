@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Pencil, Moon, User, Sun, FileText, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
-import './ProfileCard.css';
+import { Pencil, Moon, User, Sun, FileText, Settings } from 'lucide-react';
+import '../index.css';
 
 const ProfileCard = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -34,15 +34,13 @@ const ProfileCard = () => {
             className={`icon-wrapper ${activeTab === 'profile' ? 'active' : ''}`}
             onClick={() => setActiveTab('profile')}
             style={{ cursor: 'pointer' }}
-          >
-            <ChevronLeft size={24} className="icon-item" />
+          >      
           </div>
           <div
             className={`icon-wrapper ${activeTab === 'next' ? 'active' : ''}`}
             onClick={() => setActiveTab('next')}
             style={{ cursor: 'pointer' }}
           >
-            <ChevronRight size={24} className="icon-item" />
           </div>
         </div>
       </div>
