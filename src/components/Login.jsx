@@ -7,11 +7,15 @@ import { motion } from 'framer-motion';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false); 
     const navigate = useNavigate(); 
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        
         try {
+            // Fetch IP Address for Audit Logs
             let ipAddress = "Unknown";
             try {
                 const ipRes = await axios.get('https://api.ipify.org?format=json');
@@ -29,31 +33,30 @@ const Login = () => {
                 loginTime: new Date().toLocaleTimeString()
             };
 
+            // Post to Backend API
             const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
-            console.log("Login Success & Log Created:", response.data);
+            const { token, role } = response.data; 
 
-            localStorage.setItem('token', response.data.token);
-
-            // ── CRITICAL FIX: Role-Based Redirection ──
-            // We check the response data for the user's role. 
-            // (Adjust "response.data.role" if your Spring Boot backend sends it differently, e.g., response.data.user.role)
-            const userRole = response.data.role || response.data.user?.role || '';
-
-            if (userRole.toUpperCase().includes('ADMIN')) {
-                navigate('/dashboard'); // Admins go to Dashboard
-            } else {
-                navigate('/chat');      // Standard Users go to ChatBox
+            if (token) {
+                localStorage.setItem("token", token);
+                localStorage.setItem("role", role); 
+                console.log("Login Success!");
+                navigate('/dashboard');
             }
 
         } catch (error) {
             console.error("Login Error:", error);
-            alert("Invalid email or password! Please try again.");
+            const errorMsg = error.response?.data?.message || "Invalid email or password!";
+            alert(errorMsg);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
             
+            {/* Forces placeholders to be perfectly visible */}
             <style>
                 {`
                 .login-input {
@@ -74,13 +77,11 @@ const Login = () => {
                 `}
             </style>
 
-            {/* ── LEFT SIDE: Enterprise Branding ── */}
+            {/* LEFT SIDE: Enterprise Branding (from dev branch) */}
             <div className="d-none d-lg-flex flex-column justify-content-center p-5 position-relative" style={{ width: '55%', borderRight: '1px solid var(--border)' }}>
-                
                 <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(13, 110, 253, 0.08) 0%, rgba(0,0,0,0) 70%)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
                 <div style={{ zIndex: 1, maxWidth: '600px', margin: '0 auto' }}>
-                    
                     <div className="d-flex align-items-center gap-3 mb-5">
                         <div className="p-3 rounded-4 shadow-sm d-flex align-items-center justify-content-center" style={{ backgroundColor: 'var(--bg-pill)', border: '1px solid var(--border)' }}>
                            <img src="/securelawicon.svg" alt="SecureLaw Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
@@ -111,11 +112,10 @@ const Login = () => {
                             <span style={{ color: 'var(--text-main)', fontSize: '1.1rem', fontWeight: '500' }}>Secure Template Management</span>
                         </div>
                     </div>
-
                 </div>
             </div>
 
-            {/* ── RIGHT SIDE: Form Seamlessly Floating on Background ── */}
+            {/* RIGHT SIDE: Form Seamlessly Floating on Background */}
             <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
                 
                 <button 
@@ -175,13 +175,14 @@ const Login = () => {
                         <motion.button 
                             whileTap={{ scale: 0.96 }} 
                             type="submit" 
+                            disabled={loading}
                             className="btn w-100 p-3 fw-bold shadow-sm" 
                             style={{ 
                                 borderRadius: '12px', backgroundColor: 'var(--accent)', 
                                 color: '#fff', border: 'none', fontSize: '1.1rem' 
                             }}
                         >
-                            LOGIN
+                            {loading ? "AUTHENTICATING..." : "LOGIN"}
                         </motion.button>
                     </form>
                 </motion.div>

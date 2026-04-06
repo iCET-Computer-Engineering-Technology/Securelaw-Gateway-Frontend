@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './index.css';
 
 // Context & Layouts
 import { ThemeProvider } from './context/Themecontext';
@@ -22,11 +21,8 @@ import ChatBox from './pages/ChatBox';
 import RegisterForm from './components/RegisterForm';
 import SecureChat from './pages/Securechat'; 
 
-// ── NEW IMPORT: Add your ProfileCard component here ──
-// (Note: Change './components/ProfileCard' to './pages/ProfileCard' if you put the file in the pages folder!)
-import ProfileCard from './components/ProfileCard'; 
-
 function App() {
+  
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -35,22 +31,20 @@ function App() {
         <div className="App min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-main)' }}>
           
           <Routes>
-            {/* ── CRITICAL FIX: Make the default root url '/' redirect directly to Login ── */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            
+            {/* Login page without Layout/Navbar */}
             <Route path="/login" element={<Login />} />
 
-            {/* All other routes wrapped inside the Main Layout with Sidebar and Navbar */}
+            {/* All other routes wrapped in Layout */}
             <Route
               path="*"
               element={
                 <Layout>
-                  <NavigationBar />
+                  <NavigationBar onOpenRegister={() => setShowModal(true)} />
                   
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
-                      {/* Fallback internal route (if they try to go somewhere that doesn't exist) */}
-                      <Route path="*" element={<Navigate to="/chat" replace />} />
+                      {/* Default Route */}
+                      <Route path="/" element={<Navigate to="/collection" replace />} />
                       
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />
@@ -71,8 +65,11 @@ function App() {
                     </Routes>
                   </main>
 
-                  <RegisterForm show={showModal} onClose={() => setShowModal(false)} />
-                  
+                  {/* RegisterForm Modal (from dev branch) */}
+                  <RegisterForm
+                    show={showModal}
+                    onClose={() => setShowModal(false)}
+                  />
                 </Layout>
               }
             />
