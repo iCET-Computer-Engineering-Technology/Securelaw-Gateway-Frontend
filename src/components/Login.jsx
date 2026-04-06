@@ -119,7 +119,7 @@ const Login = () => {
             <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
                 
                 <button 
-                    onClick={() => navigate('/collection')} 
+                    onClick={() => navigate('/chat')} 
                     className="btn position-absolute d-flex align-items-center justify-content-center p-0" 
                     style={{ 
                         top: '30px', right: '30px', width: '40px', height: '40px', 

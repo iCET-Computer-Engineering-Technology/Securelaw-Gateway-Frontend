@@ -3,7 +3,6 @@ import axios from 'axios';
 import { FileUp, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion'; 
 
-// Function name updated to UploadPages to match your file name perfectly!
 export default function UploadPages({ onClose, onUploadSuccess }) {
   const [file, setFile] = useState(null);
   const [formData, setFormData] = useState({ name: '', author: '', category: '', description: '' });
@@ -31,9 +30,17 @@ export default function UploadPages({ onClose, onUploadSuccess }) {
     setStatus(null);
 
     try {
+      // ── THE CRITICAL FIX: Get the token from LocalStorage ──
+      const token = localStorage.getItem('token'); 
+
       await axios.post('http://localhost:8080/api/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          // ── Attach the token to bypass Spring Security ──
+          'Authorization': `Bearer ${token}` 
+        }
       });
+
       setStatus({ type: 'success', message: 'Template successfully saved!' });
       
       // Wait 1.5s to show success, then refresh the grid and close the popup
