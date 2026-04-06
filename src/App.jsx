@@ -22,7 +22,7 @@ import RegisterForm from './components/RegisterForm';
 import ProfileCard from './components/ProfileCard';
 
 function App() {
-  // dev branch එකෙන් ආපු state එක - Modal එක පාලනය කරන්න
+  
   const [showModal, setShowModal] = useState(false);
 
   return (

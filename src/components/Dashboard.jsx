@@ -8,7 +8,7 @@ const Dashboard = () => {
     promptCount: 0,
     registrationCount: 0,
     recentLogins: [],
-    activeUsers: [] // dev branch එකේ අලුත් state එක
+    activeUsers: [] 
   });
   const [loading, setLoading] = useState(true);
 
@@ -21,8 +21,8 @@ const Dashboard = () => {
       setLoading(true);
       const data = await AuditLogService.getAllLogs();
       
-      // dev branch එකෙන් ආපු logic එක: Active users ටික extract කරගන්නවා
-      // මෙහිදී 'data.recentLogins' පාවිච්චි කරමු
+      
+      
       const uniqueActiveUsers = [];
       const seenNames = new Set();
       
