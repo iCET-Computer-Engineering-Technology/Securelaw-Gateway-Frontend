@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AuditLogService from '../services/AuditLogService';
 
-
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalLogs: 0,
     loginCount: 0,
     promptCount: 0,
     registrationCount: 0,
-    recentLogs: [],
-    activeUsers: [] // ── NEW: Added state to hold active users
+    recentLogins: [],
+    activeUsers: [] 
   });
   const [loading, setLoading] = useState(true);
 
@@ -20,32 +19,30 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const logs = await AuditLogService.getAllLogs();
+      const data = await AuditLogService.getAllLogs();
       
-      const loginCount = logs.filter(log => log.type === 'LOGIN').length;
-      const promptCount = logs.filter(log => log.type === 'PROMPT').length;
-      const registrationCount = logs.filter(log => log.type === 'REGISTRATION').length;
       
-      // ── NEW: Extract recent unique logins to show as "Active Users" ──
-      const loginLogs = logs.filter(log => log.type === 'LOGIN' || log.type === 'Admin');
+      
       const uniqueActiveUsers = [];
       const seenNames = new Set();
       
-      for (const log of loginLogs) {
-        if (!seenNames.has(log.name)) {
-          seenNames.add(log.name);
-          uniqueActiveUsers.push(log);
+      if (data.recentLogins) {
+        for (const log of data.recentLogins) {
+          if (!seenNames.has(log.name)) {
+            seenNames.add(log.name);
+            uniqueActiveUsers.push(log);
+          }
+          if (uniqueActiveUsers.length >= 5) break; 
         }
-        if (uniqueActiveUsers.length >= 5) break; // Limit to top 5 recent users
       }
 
       setStats({
-        totalLogs: logs.length,
-        loginCount,
-        promptCount,
-        registrationCount,
-        recentLogs: logs.slice(0, 5),
-        activeUsers: uniqueActiveUsers // Store active users
+        totalLogs: data.totalLogs || 0,
+        loginCount: data.loginEvents || 0,
+        promptCount: data.promptEvents || 0,
+        registrationCount: data.registrations || 0,
+        recentLogins: data.recentLogins || [],
+        activeUsers: uniqueActiveUsers 
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -71,6 +68,7 @@ const Dashboard = () => {
         </h2>
       </div>
 
+      {/* Stats Cards */}
       <div className="col-md-3 mb-4">
         <div className="glass-panel h-100 p-4 position-relative overflow-hidden">
           <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#0d6efd' }}></div>
@@ -123,7 +121,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── UPDATED: Changed from col-8 to col-lg-8 so it sits next to the active users ── */}
+      {/* Recent Activity Table (Left - 8 columns) */}
       <div className="col-lg-8 mb-4">
         <div className="glass-panel h-100">
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -135,26 +133,28 @@ const Dashboard = () => {
                 <thead>
                   <tr>
                     <th>Name</th>
-                    <th>Date & Time</th>
-                    <th>Type</th>
-                    <th>IP Address</th>
-                    <th>Device</th>
+                    <th>Role</th>
+                    <th>Date</th>
+                    <th>Time</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentLogs.map((log, index) => (
+                  {stats.recentLogins.length > 0 ? stats.recentLogins.map((log, index) => (
                     <tr key={index}>
                       <td className="fw-medium">{log.name}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{new Date(log.dateTime).toLocaleString()}</td>
                       <td>
-                        <span className={`badge bg-${getBadgeColor(log.type)} bg-opacity-75`}>
-                          {log.type}
-                        </span>
+                        <span className="badge bg-primary bg-opacity-75">{log.role}</span>
                       </td>
-                      <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
-                      <td style={{ color: 'var(--text-muted)' }}>{log.device}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.date}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.time}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan="4" className="text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                        No recent activity found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -162,7 +162,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── NEW: Active Users Panel added directly to the right! ── */}
+      {/* Active Users Panel (Right - 4 columns) */}
       <div className="col-lg-4 mb-4">
         <div className="glass-panel h-100">
           <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -177,23 +177,18 @@ const Dashboard = () => {
                 {stats.activeUsers.map((user, index) => (
                   <li key={index} className="list-group-item bg-transparent d-flex justify-content-between align-items-center px-2 py-3" style={{ borderBottom: '1px solid var(--border)', borderTop: 'none' }}>
                     <div className="d-flex align-items-center gap-3">
-                      
-                      {/* Avatar with Green Status Dot */}
                       <div className="position-relative">
                         <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style={{ width: '42px', height: '42px', backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', fontSize: '1.2rem' }}>
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                         <span className="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style={{ width: '12px', height: '12px', transform: 'translate(20%, 20%)' }}></span>
                       </div>
-
-                      {/* Name and Time */}
                       <div>
                         <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name}</h6>
                         <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                          Logged in at {new Date(user.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {user.time ? `Logged in at ${user.time}` : 'Active now'}
                         </small>
                       </div>
-
                     </div>
                   </li>
                 ))}
@@ -207,18 +202,8 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
-};
-
-const getBadgeColor = (type) => {
-  switch(type) {
-    case 'LOGIN': return 'success';
-    case 'PROMPT': return 'info';
-    case 'REGISTRATION': return 'warning';
-    default: return 'secondary';
-  }
 };
 
 export default Dashboard;

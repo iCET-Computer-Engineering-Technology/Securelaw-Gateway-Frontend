@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 // Context & Layouts
 import { ThemeProvider } from './context/Themecontext';
 import Layout from './components/Layout';
@@ -22,9 +21,9 @@ import UploadPages from './pages/UploadPages';
 import RegisterForm from './components/RegisterForm';
 import ProfileCard from './components/ProfileCard';
 
-
 function App() {
-  const [showModal, setShowModal] = useState(true);
+  
+  const [showModal, setShowModal] = useState(false);
 
   return (
     <ThemeProvider>
@@ -32,20 +31,21 @@ function App() {
         <div className="App min-vh-100 d-flex flex-column" style={{background: 'var(--bg-main)'}}>
           
           <Routes>
-            
+            {/* Login page without Layout/Navbar */}
             <Route path="/login" element={<Login />} />
 
-            
+            {/* All other routes wrapped in Layout */}
             <Route
               path="*"
               element={
                 <Layout>
-                  <NavigationBar />
+                  <NavigationBar onOpenRegister={() => setShowModal(true)} />
                   
-                  {/* Content Area */}
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
+                      {/* Default Route */}
                       <Route path="/" element={<Navigate to="/collection" replace />} />
+                      
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />
                       <Route path="/upload" element={<UploadPages />} />
@@ -62,13 +62,11 @@ function App() {
                     </Routes>
                   </main>
 
-                  {/* Modal components */}
+                  {/* RegisterForm Modal (from dev branch) */}
                   <RegisterForm
                     show={showModal}
                     onClose={() => setShowModal(false)}
                   />
-
-                 
                 </Layout>
               }
             />
