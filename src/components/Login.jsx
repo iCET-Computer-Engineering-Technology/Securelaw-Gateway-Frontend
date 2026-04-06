@@ -32,7 +32,18 @@ const Login = () => {
             const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
             console.log("Login Success & Log Created:", response.data);
 
-            navigate('/dashboard');
+            localStorage.setItem('token', response.data.token);
+
+            // ── CRITICAL FIX: Role-Based Redirection ──
+            // We check the response data for the user's role. 
+            // (Adjust "response.data.role" if your Spring Boot backend sends it differently, e.g., response.data.user.role)
+            const userRole = response.data.role || response.data.user?.role || '';
+
+            if (userRole.toUpperCase().includes('ADMIN')) {
+                navigate('/dashboard'); // Admins go to Dashboard
+            } else {
+                navigate('/chat');      // Standard Users go to ChatBox
+            }
 
         } catch (error) {
             console.error("Login Error:", error);
@@ -43,7 +54,6 @@ const Login = () => {
     return (
         <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
             
-            {/* ── INTERNAL CSS: Forces placeholders to be perfectly visible in Light/Dark mode ── */}
             <style>
                 {`
                 .login-input {
@@ -108,9 +118,8 @@ const Login = () => {
             {/* ── RIGHT SIDE: Form Seamlessly Floating on Background ── */}
             <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
                 
-                {/* ── MOVED CLOSE BUTTON TO TOP RIGHT CORNER ── */}
                 <button 
-                    onClick={() => navigate('/collection')} 
+                    onClick={() => navigate('/chat')} 
                     className="btn position-absolute d-flex align-items-center justify-content-center p-0" 
                     style={{ 
                         top: '30px', right: '30px', width: '40px', height: '40px', 
@@ -124,7 +133,6 @@ const Login = () => {
                     <X size={20} />
                 </button>
 
-                {/* ── REMOVED CARD PANEL STYLES: Now it floats cleanly ── */}
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.95, y: 15 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -141,7 +149,6 @@ const Login = () => {
                     </div>
                     
                     <form onSubmit={handleLogin}>
-                        {/* ── ADDED LABELS AND CLEAN OUTLINED INPUTS ── */}
                         <div className="mb-4 text-start">
                             <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Email Address</label>
                             <input 
