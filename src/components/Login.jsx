@@ -8,6 +8,7 @@ import AuditLogService from '../services/AuditLogService';
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false); 
     const navigate = useNavigate(); 
 
     const getDeviceName = () => {
@@ -22,6 +23,8 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setLoading(true);
+        
         try {
             let currentIp = "Unknown";
             try {
@@ -41,6 +44,7 @@ const Login = () => {
                 loginTime: new Date().toLocaleTimeString()
             };
 
+            // Post to Backend API
             const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
             localStorage.setItem('token', response.data.token);
 
@@ -70,7 +74,10 @@ const Login = () => {
 
         } catch (error) {
             console.error("Login Error:", error);
-            alert("Invalid email or password! Please try again.");
+            const errorMsg = error.response?.data?.message || "Invalid email or password!";
+            alert(errorMsg);
+        } finally {
+            setLoading(false);
         }
     };
 

@@ -1,8 +1,9 @@
-import axios from "axios";
+import axios from "axios"; // ── FIXED: Restored axios! ──
+import api from "../api/axiosConfig"; // Kept your teammate's import just in case
 
-const API_BASE_URL = "http://localhost:8080/api/audit";
+const ADMIN_API_URL = "http://localhost:8080/api/v1/admin"; 
+const API_BASE_URL = "http://localhost:8080/api/audit"; // ── FIXED: Restored Audit URL! ──
 
-// ── NEW: Helper function to grab the token for every request ──
 const getAuthHeaders = () => {
   const token = localStorage.getItem('token');
   return {
@@ -15,18 +16,16 @@ const getAuthHeaders = () => {
 class AuditLogService {
   async getAllLogs() {
     try {
-      // Attached the headers here!
       const response = await axios.get(`${API_BASE_URL}/logs`, getAuthHeaders());
       return response.data; 
     } catch (error) {
-      console.error("Error fetching logs:", error);
+      console.error("Error fetching dashboard stats:", error);
       throw error; 
     }
   }
 
   async getLogsByType(type) {
     try {
-      // Attached the headers here!
       const response = await axios.get(`${API_BASE_URL}/logs/type/${type}`, getAuthHeaders());
       return response.data;
     } catch (error) {
@@ -37,7 +36,6 @@ class AuditLogService {
 
   async getLogsByName(name) {
     try {
-      // Attached the headers here!
       const response = await axios.get(`${API_BASE_URL}/logs/name/${name}`, getAuthHeaders());
       return response.data;
     } catch (error) {
@@ -48,7 +46,6 @@ class AuditLogService {
 
   async saveLog(logData) {
     try {
-      // Attached the headers here!
       const response = await axios.post(`${API_BASE_URL}/save`, logData, getAuthHeaders());
       return response.data;
     } catch (error) {

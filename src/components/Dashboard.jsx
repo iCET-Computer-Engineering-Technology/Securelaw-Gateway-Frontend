@@ -7,7 +7,7 @@ const Dashboard = () => {
     loginCount: 0,
     promptCount: 0,
     registrationCount: 0,
-    recentLogs: [],
+    recentLogins: [],
     activeUsers: [] 
   });
   const [loading, setLoading] = useState(true);
@@ -19,21 +19,17 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const logs = await AuditLogService.getAllLogs();
+      // ── FIXED: Changed 'data' to 'logs' so the rest of the code works! ──
+      const logs = await AuditLogService.getAllLogs(); 
       
       if (!Array.isArray(logs)) return;
 
-      // ── THE FIX 1: SORT LOGS NEWEST FIRST ──
-      // This forces the "Recent Activity" table to show what JUST happened.
       const sortedLogs = [...logs].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
 
       const loginCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'LOGIN').length;
       const promptCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'PROMPT').length;
       const registrationCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'REGISTRATION').length;
       
-      // ── THE FIX 2: SMART ACTIVE USERS CHECK ──
-      // Because sortedLogs is newest-first, the first time we see a user's name is their current status.
-      // If their newest log is a 'LOGOUT', we ignore them. If it's anything else, they are active!
       const uniqueActiveUsers = [];
       const userStatusMap = new Map(); 
       
@@ -41,17 +37,12 @@ const Dashboard = () => {
         if (!log.name) continue;
         const type = log.type?.toUpperCase();
 
-        // Have we seen this user yet while scanning top-to-bottom?
         if (!userStatusMap.has(log.name)) {
-            // Mark that we evaluated them
             userStatusMap.set(log.name, type);
-            
-            // If their most recent event wasn't logging out, they are online!
             if (type !== 'LOGOUT') {
                 uniqueActiveUsers.push(log);
             }
         }
-        
         if (uniqueActiveUsers.length >= 5) break; 
       }
 
@@ -60,7 +51,7 @@ const Dashboard = () => {
         loginCount,
         promptCount,
         registrationCount,
-        recentLogs: sortedLogs.slice(0, 5), // Takes the 5 NEWEST items now!
+        recentLogins: sortedLogs.slice(0, 5), 
         activeUsers: uniqueActiveUsers 
       });
     } catch (error) {
@@ -87,6 +78,7 @@ const Dashboard = () => {
         </h2>
       </div>
 
+      {/* Stats Cards */}
       <div className="col-md-3 mb-4">
         <div className="glass-panel h-100 p-4 position-relative overflow-hidden">
           <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', backgroundColor: '#0d6efd' }}></div>
@@ -157,7 +149,7 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentLogs.map((log, index) => (
+                  {stats.recentLogins.length > 0 ? stats.recentLogins.map((log, index) => (
                     <tr key={index}>
                       <td className="fw-medium">{log.name || 'Unknown'}</td>
                       <td style={{ color: 'var(--text-muted)' }}>{log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}</td>
@@ -169,7 +161,13 @@ const Dashboard = () => {
                       <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || log.ip || '-'}</code></td>
                       <td style={{ color: 'var(--text-muted)' }}>{log.device || '-'}</td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan="5" className="text-center py-4" style={{ color: 'var(--text-muted)' }}>
+                        No recent activity found.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -198,14 +196,12 @@ const Dashboard = () => {
                         </div>
                         <span className="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style={{ width: '12px', height: '12px', transform: 'translate(20%, 20%)' }}></span>
                       </div>
-
                       <div>
                         <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name || 'Unknown User'}</h6>
                         <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
                           Active at {user.dateTime ? new Date(user.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
                         </small>
                       </div>
-
                     </div>
                   </li>
                 ))}
@@ -219,7 +215,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
@@ -230,7 +225,7 @@ const getBadgeColor = (type) => {
     case 'LOGIN': return 'success';
     case 'PROMPT': return 'info';
     case 'REGISTRATION': return 'warning';
-    case 'LOGOUT': return 'secondary'; // Added color for logout events
+    case 'LOGOUT': return 'secondary'; 
     default: return 'secondary';
   }
 };

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import TemplateSearchBar from "./TemplateSearchBar";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 const TemplateView = ({ templates, onSelect, selectedId, onResults }) => {
   const [isOpen, setIsOpen] = useState(true);
@@ -12,75 +13,100 @@ const TemplateView = ({ templates, onSelect, selectedId, onResults }) => {
   };
 
   return (
-    <>
+    <div className="position-relative d-flex h-100">
+      
+      {/* Toggle Button */}
       <button
-        className="sidebar-toggle"
         onClick={() => setIsOpen(!isOpen)}
+        className="btn position-absolute d-flex align-items-center justify-content-center p-0 shadow-sm"
+        style={{
+            top: '20px',
+            right: isOpen ? '-16px' : '-40px', // Hangs off the edge
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--bg-pill)',
+            border: '1px solid var(--border)',
+            color: 'var(--text-main)',
+            zIndex: 10,
+            transition: 'all 0.3s ease'
+        }}
         title={isOpen ? "Hide panel" : "Show panel"}
       >
-        {isOpen ? (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        )}
+        {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
       </button>
 
+      {/* Sidebar Panel */}
       <div
-        className="sidebar d-flex flex-column"
+        className="d-flex flex-column h-100"
         style={{
-          width: isOpen ? "340px" : "0px",
-          minWidth: isOpen ? "340px" : "0px",
-          /* ── THE FIX: Changed from 300px to 100% so it stretches all the way down ── */
-          height: "100%", 
-          minHeight: "100%",
-          overflowY: "auto", // Allows scrolling inside the sidebar if you have many templates
+          width: isOpen ? "320px" : "0px",
+          minWidth: isOpen ? "320px" : "0px",
+          backgroundColor: 'var(--bg-glass)',
+          borderRight: isOpen ? "1px solid var(--border)" : "none",
+          transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           overflowX: "hidden",
-          transition: "width 0.3s ease, min-width 0.3s ease",
-          borderRight: isOpen ? "1px solid var(--border)" : "none"
+          overflowY: "auto"
         }}
       >
-        <div className="sidebar-header px-2 pt-2 pb-1" style={{ fontSize: '11px', fontWeight: 'bold', letterSpacing: '1px', color: 'var(--text-muted)' }}>
-          TEMPLATES
+        <div className="p-3 border-bottom" style={{ borderColor: 'var(--border)' }}>
+            <h6 className="mb-3 fw-bold" style={{ color: 'var(--text-muted)', fontSize: '0.8rem', letterSpacing: '1px' }}>
+                TEMPLATE LIBRARY
+            </h6>
+            <TemplateSearchBar onResults={onResults} />
         </div>
-        
-        <TemplateSearchBar onResults={onResults} />
 
-        <div className="template-grid mt-2 pb-4">
+        <div className="p-3 d-flex flex-column gap-2 overflow-auto custom-scrollbar">
           {templates.length === 0 ? (
-            <p className="no-templates text-center w-100 mt-4" style={{ gridColumn: '1 / -1' }}>No templates found.</p>
+            <div className="text-center mt-5 text-muted p-4">
+                <FileText size={32} className="mb-2 opacity-50 mx-auto" />
+                <p className="mb-0 small">No templates found.</p>
+            </div>
           ) : (
-            templates.map((template) => (
-              <div
-                key={template.id}
-                className={`sidebar-template-card ${selectedId === template.id ? "selected" : ""}`}
-                onClick={() => onSelect(template)}
-                onKeyDown={(e) => handleKeyDown(e, template)}
-                tabIndex={0}
-                role="button"
-                aria-pressed={selectedId === template.id}
-              >
-                <div className="template-icon mb-1">
-                  <svg width="24" height="28" viewBox="0 0 28 32" fill="none">
-                    <path d="M4 0H20L28 8V28C28 30.2 26.2 32 24 32H4C1.8 32 0 30.2 0 28V4C0 1.8 1.8 0 4 0Z" fill="rgba(100,100,100,0.1)" />
-                    <path d="M20 0L28 8H22C20.9 8 20 7.1 20 6V0Z" fill="rgba(100,100,100,0.2)" />
-                    <rect x="6" y="13" width="16" height="1.5" rx="0.75" fill="rgba(100,100,100,0.4)" />
-                    <rect x="6" y="17" width="12" height="1.5" rx="0.75" fill="rgba(100,100,100,0.4)" />
-                    <rect x="6" y="21" width="14" height="1.5" rx="0.75" fill="rgba(100,100,100,0.4)" />
-                  </svg>
+            templates.map((template) => {
+              const isSelected = selectedId === template.id;
+              return (
+                <div
+                  key={template.id}
+                  onClick={() => onSelect(template)}
+                  onKeyDown={(e) => handleKeyDown(e, template)}
+                  tabIndex={0}
+                  role="button"
+                  className="p-3 rounded-3 d-flex flex-column align-items-start"
+                  style={{
+                    backgroundColor: isSelected ? 'var(--accent)' : 'var(--bg-input)',
+                    border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                    color: isSelected ? '#fff' : 'var(--text-main)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    outline: 'none'
+                  }}
+                  onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--bg-pill)';
+                  }}
+                  onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--bg-input)';
+                  }}
+                >
+                  <div className="d-flex align-items-center gap-2 mb-1 w-100">
+                    <FileText size={16} style={{ color: isSelected ? '#fff' : 'var(--accent)' }} />
+                    <span className="fw-bold text-truncate" style={{ fontSize: '0.95rem' }}>
+                      {template.name || template.title || "Untitled Template"}
+                    </span>
+                  </div>
+                  
+                  {template.description && (
+                      <span className="small text-truncate w-100" style={{ opacity: isSelected ? 0.9 : 0.6 }}>
+                          {template.description}
+                      </span>
+                  )}
                 </div>
-                <span className="template-label text-center" style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)' }}>
-                  {template.name || template.title || "Untitled"}
-                </span>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
