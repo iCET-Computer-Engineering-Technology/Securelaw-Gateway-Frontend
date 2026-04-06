@@ -22,7 +22,15 @@ const RegistrationHistory = () => {
     try {
       setLoading(true);
       const allLogs = await AuditLogService.getAllLogs();
-      const registrationLogs = allLogs.filter(log => log.type === 'REGISTRATION' || log.type === 'Admin');
+      
+      if (!Array.isArray(allLogs)) return;
+
+      // Ensure case-insensitivity so it doesn't fail
+      const registrationLogs = allLogs.filter(log => 
+        log.type?.toUpperCase() === 'REGISTRATION' || 
+        log.type?.toUpperCase() === 'ADMIN'
+      );
+      
       setLogs(registrationLogs);
       setFilteredLogs(registrationLogs);
     } catch (error) {
@@ -34,16 +42,19 @@ const RegistrationHistory = () => {
 
   const filterLogs = () => {
     let filtered = [...logs];
+    
     if (searchTerm) {
       filtered = filtered.filter(log =>
-        log.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.ipAddress.includes(searchTerm)
+        log.ipAddress?.includes(searchTerm)
       );
     }
+    
     if (roleFilter !== 'all') {
-      filtered = filtered.filter(log => log.type === roleFilter);
+      filtered = filtered.filter(log => log.type?.toUpperCase() === roleFilter.toUpperCase() || log.type?.toUpperCase() === 'REGISTRATION');
     }
+    
     setFilteredLogs(filtered);
     setCurrentPage(1);
   };
@@ -62,7 +73,6 @@ const RegistrationHistory = () => {
   }
 
   const inputStyle = { backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)' };
-  
   const optionStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' };
 
   return (
@@ -130,20 +140,20 @@ const RegistrationHistory = () => {
                     <th>Email</th>
                     <th>Date & Time</th>
                     <th>IP Address</th>
-                    <th>Role</th>
+                    <th>Event Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentItems.length > 0 ? (
                     currentItems.map((log, index) => (
                       <tr key={log.id || index}>
-                        <td className="fw-medium">{log.name}</td>
-                        <td style={{ color: 'var(--text-muted)' }}>{log.email || `${log.name.toLowerCase().replace(' ', '.')}@gmail.com`}</td>
-                        <td style={{ color: 'var(--text-muted)' }}>{new Date(log.dateTime).toLocaleString()}</td>
-                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
+                        <td className="fw-medium">{log.name || 'Unknown'}</td>
+                        <td style={{ color: 'var(--text-muted)' }}>{log.email || `${(log.name || 'user').toLowerCase().replace(' ', '.')}@gmail.com`}</td>
+                        <td style={{ color: 'var(--text-muted)' }}>{log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}</td>
+                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || '-'}</code></td>
                         <td>
-                          <span className={`badge bg-${log.type === 'Admin' ? 'warning text-dark' : 'info text-dark'} bg-opacity-75`}>
-                            {log.type}
+                          <span className={`badge bg-${log.type?.toUpperCase() === 'ADMIN' ? 'warning' : 'info'} text-dark bg-opacity-75`}>
+                            {log.type || 'REGISTRATION'}
                           </span>
                         </td>
                       </tr>

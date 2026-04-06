@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuditLogService from '../services/AuditLogService';
 
-
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalLogs: 0,
@@ -9,7 +8,7 @@ const Dashboard = () => {
     promptCount: 0,
     registrationCount: 0,
     recentLogs: [],
-    activeUsers: [] // ── NEW: Added state to hold active users
+    activeUsers: [] 
   });
   const [loading, setLoading] = useState(true);
 
@@ -22,21 +21,38 @@ const Dashboard = () => {
       setLoading(true);
       const logs = await AuditLogService.getAllLogs();
       
-      const loginCount = logs.filter(log => log.type === 'LOGIN').length;
-      const promptCount = logs.filter(log => log.type === 'PROMPT').length;
-      const registrationCount = logs.filter(log => log.type === 'REGISTRATION').length;
+      if (!Array.isArray(logs)) return;
+
+      // ── THE FIX 1: SORT LOGS NEWEST FIRST ──
+      // This forces the "Recent Activity" table to show what JUST happened.
+      const sortedLogs = [...logs].sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+
+      const loginCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'LOGIN').length;
+      const promptCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'PROMPT').length;
+      const registrationCount = sortedLogs.filter(log => log.type?.toUpperCase() === 'REGISTRATION').length;
       
-      // ── NEW: Extract recent unique logins to show as "Active Users" ──
-      const loginLogs = logs.filter(log => log.type === 'LOGIN' || log.type === 'Admin');
+      // ── THE FIX 2: SMART ACTIVE USERS CHECK ──
+      // Because sortedLogs is newest-first, the first time we see a user's name is their current status.
+      // If their newest log is a 'LOGOUT', we ignore them. If it's anything else, they are active!
       const uniqueActiveUsers = [];
-      const seenNames = new Set();
+      const userStatusMap = new Map(); 
       
-      for (const log of loginLogs) {
-        if (!seenNames.has(log.name)) {
-          seenNames.add(log.name);
-          uniqueActiveUsers.push(log);
+      for (const log of sortedLogs) {
+        if (!log.name) continue;
+        const type = log.type?.toUpperCase();
+
+        // Have we seen this user yet while scanning top-to-bottom?
+        if (!userStatusMap.has(log.name)) {
+            // Mark that we evaluated them
+            userStatusMap.set(log.name, type);
+            
+            // If their most recent event wasn't logging out, they are online!
+            if (type !== 'LOGOUT') {
+                uniqueActiveUsers.push(log);
+            }
         }
-        if (uniqueActiveUsers.length >= 5) break; // Limit to top 5 recent users
+        
+        if (uniqueActiveUsers.length >= 5) break; 
       }
 
       setStats({
@@ -44,8 +60,8 @@ const Dashboard = () => {
         loginCount,
         promptCount,
         registrationCount,
-        recentLogs: logs.slice(0, 5),
-        activeUsers: uniqueActiveUsers // Store active users
+        recentLogs: sortedLogs.slice(0, 5), // Takes the 5 NEWEST items now!
+        activeUsers: uniqueActiveUsers 
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -123,7 +139,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── UPDATED: Changed from col-8 to col-lg-8 so it sits next to the active users ── */}
       <div className="col-lg-8 mb-4">
         <div className="glass-panel h-100">
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -144,15 +159,15 @@ const Dashboard = () => {
                 <tbody>
                   {stats.recentLogs.map((log, index) => (
                     <tr key={index}>
-                      <td className="fw-medium">{log.name}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>{new Date(log.dateTime).toLocaleString()}</td>
+                      <td className="fw-medium">{log.name || 'Unknown'}</td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}</td>
                       <td>
                         <span className={`badge bg-${getBadgeColor(log.type)} bg-opacity-75`}>
-                          {log.type}
+                          {log.type || 'UNKNOWN'}
                         </span>
                       </td>
-                      <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
-                      <td style={{ color: 'var(--text-muted)' }}>{log.device}</td>
+                      <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || log.ip || '-'}</code></td>
+                      <td style={{ color: 'var(--text-muted)' }}>{log.device || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -162,7 +177,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── NEW: Active Users Panel added directly to the right! ── */}
       <div className="col-lg-4 mb-4">
         <div className="glass-panel h-100">
           <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
@@ -178,19 +192,17 @@ const Dashboard = () => {
                   <li key={index} className="list-group-item bg-transparent d-flex justify-content-between align-items-center px-2 py-3" style={{ borderBottom: '1px solid var(--border)', borderTop: 'none' }}>
                     <div className="d-flex align-items-center gap-3">
                       
-                      {/* Avatar with Green Status Dot */}
                       <div className="position-relative">
                         <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style={{ width: '42px', height: '42px', backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                          {user.name.charAt(0).toUpperCase()}
+                          {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </div>
                         <span className="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style={{ width: '12px', height: '12px', transform: 'translate(20%, 20%)' }}></span>
                       </div>
 
-                      {/* Name and Time */}
                       <div>
-                        <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name}</h6>
+                        <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name || 'Unknown User'}</h6>
                         <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                          Logged in at {new Date(user.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          Active at {user.dateTime ? new Date(user.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
                         </small>
                       </div>
 
@@ -213,10 +225,12 @@ const Dashboard = () => {
 };
 
 const getBadgeColor = (type) => {
-  switch(type) {
+  if (!type) return 'secondary';
+  switch(type.toUpperCase()) {
     case 'LOGIN': return 'success';
     case 'PROMPT': return 'info';
     case 'REGISTRATION': return 'warning';
+    case 'LOGOUT': return 'secondary'; // Added color for logout events
     default: return 'secondary';
   }
 };

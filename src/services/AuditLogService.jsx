@@ -2,12 +2,21 @@ import axios from "axios";
 
 const API_BASE_URL = "http://localhost:8080/api/audit";
 
-class AuditLogService {
+// ── NEW: Helper function to grab the token for every request ──
+const getAuthHeaders = () => {
+  const token = localStorage.getItem('token');
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  };
+};
 
- 
+class AuditLogService {
   async getAllLogs() {
     try {
-      const response = await axios.get(`${API_BASE_URL}/logs`);
+      // Attached the headers here!
+      const response = await axios.get(`${API_BASE_URL}/logs`, getAuthHeaders());
       return response.data; 
     } catch (error) {
       console.error("Error fetching logs:", error);
@@ -17,7 +26,8 @@ class AuditLogService {
 
   async getLogsByType(type) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/logs/type/${type}`);
+      // Attached the headers here!
+      const response = await axios.get(`${API_BASE_URL}/logs/type/${type}`, getAuthHeaders());
       return response.data;
     } catch (error) {
       console.error(`Error fetching logs for type ${type}:`, error);
@@ -27,7 +37,8 @@ class AuditLogService {
 
   async getLogsByName(name) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/logs/name/${name}`);
+      // Attached the headers here!
+      const response = await axios.get(`${API_BASE_URL}/logs/name/${name}`, getAuthHeaders());
       return response.data;
     } catch (error) {
       console.error(`Error fetching logs for name ${name}:`, error);
@@ -37,7 +48,8 @@ class AuditLogService {
 
   async saveLog(logData) {
     try {
-      const response = await axios.post(`${API_BASE_URL}/save`, logData);
+      // Attached the headers here!
+      const response = await axios.post(`${API_BASE_URL}/save`, logData, getAuthHeaders());
       return response.data;
     } catch (error) {
       console.error("Error saving log:", error);

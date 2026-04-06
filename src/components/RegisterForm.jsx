@@ -6,12 +6,12 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
 
-// --- ROBUST BACKEND LOGIC & HELPERS ---
+// ── IMPORT AUDIT LOG SERVICE ──
+import AuditLogService from '../services/AuditLogService';
+
 const buildRegisterApiUrl = () => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-    return baseUrl
-        ? `${baseUrl.replace(/\/$/, '')}/api/v1/users/register`
-        : 'http://localhost:8080/api/v1/users/register';
+    return baseUrl ? `${baseUrl.replace(/\/$/, '')}/api/v1/users/register` : 'http://localhost:8080/api/v1/users/register';
 };
 
 const extractErrorMessage = (error) => {
@@ -22,20 +22,9 @@ const extractErrorMessage = (error) => {
         if (data && typeof data === 'object') {
             if (typeof data.message === 'string' && data.message.trim()) return `${data.message}<br/><small>HTTP ${status}</small>`;
             if (typeof data.error === 'string' && data.error.trim()) return `${data.error}<br/><small>HTTP ${status}</small>`;
-            const validationMessages = Object.entries(data)
-                .filter(([, value]) => value !== null && value !== undefined)
-                .flatMap(([key, value]) => {
-                    const values = Array.isArray(value) ? value : [value];
-                    return values.map((item) => {
-                        const message = typeof item === 'string' ? item : JSON.stringify(item);
-                        return key === 'message' ? message : `${key}: ${message}`;
-                    });
-                });
-            if (validationMessages.length > 0) return `${validationMessages.map((msg) => `• ${msg}`).join('<br/>')}<br/><small>HTTP ${status}</small>`;
         }
         return `${fallbackMessage}<br/><small>HTTP ${status}</small>`;
     }
-    if (error.request) return 'No response from server. Check API server availability and CORS settings.';
     return error.message || fallbackMessage;
 };
 
@@ -48,13 +37,19 @@ const getPasswordValidationErrors = (password) => {
     return errors;
 };
 
+// ── HELPER: Get Device Name ──
+const getDeviceName = () => {
+    const ua = window.navigator.userAgent;
+    if (ua.includes("Windows")) return "Windows PC";
+    if (ua.includes("Mac")) return "MacBook";
+    if (ua.includes("Linux")) return "Linux PC";
+    if (ua.includes("Android")) return "Android Mobile";
+    if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS Device";
+    return "Unknown Browser";
+};
 
-// --- COMPONENT (Now acts as its own Modal Wrapper!) ---
 const RegisterForm = ({ show = true, onClose }) => {
-    const [formData, setFormData] = useState({
-        fullName: '', email: '', password: '', confirmPassword: '', role: 'JUNIOR_LAWYER'
-    });
-
+    const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '', role: 'JUNIOR_LAWYER' });
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
@@ -99,12 +94,34 @@ const RegisterForm = ({ show = true, onClose }) => {
         setLoading(true);
 
         try {
-            const response = await axios.post(buildRegisterApiUrl(), submitData, { headers: { 'Content-Type': 'application/json' } });
-            setLoading(false);
+            // Get IP
+            let currentIp = "Unknown";
+            try {
+                const ipRes = await axios.get('https://api.ipify.org?format=json');
+                currentIp = ipRes.data.ip;
+            } catch (err) {
+                console.error("Could not fetch IP", err);
+            }
 
+            const response = await axios.post(buildRegisterApiUrl(), submitData, { headers: { 'Content-Type': 'application/json' } });
+            
+            // ── SAVE REGISTRATION LOG (Perfectly matching Spring Boot Backend!) ──
+            try {
+                const logData = {
+                    name: submitData.name,
+                    type: 'REGISTRATION',
+                    ip: currentIp, 
+                    device: getDeviceName()
+                    // ── Removed email and dateTime so Spring Boot accepts it! ──
+                };
+                await AuditLogService.saveLog(logData);
+            } catch (logError) {
+                console.error("Warning: Could not save audit log.", logError);
+            }
+
+            setLoading(false);
             Swal.fire({ icon: 'success', title: 'Success!', text: response.data.message || 'Account created successfully!', timer: 2500, showConfirmButton: false });
             setFormData({ fullName: '', email: '', password: '', confirmPassword: '', role: 'JUNIOR_LAWYER' });
-            
             if (onClose) onClose();
 
         } catch (error) {
@@ -117,58 +134,32 @@ const RegisterForm = ({ show = true, onClose }) => {
         }
     };
 
-    // If 'show' is false, render absolutely nothing!
     if (!show) return null;
 
     const inputStyle = { backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)' };
     const optionStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' };
 
     return (
-        // The Dark Modal Overlay is now built directly into the form component!
-        <div 
-            className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center py-5"
-            style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, overflowY: 'auto' }}
-            onClick={onClose} // Clicking the dark background closes the modal
-        >
-            <motion.div
-                onClick={(e) => e.stopPropagation()} // Prevents clicks inside the card from closing it
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                style={{ width: '100%', maxWidth: '650px', padding: '0 15px' }}
-            >
-                <Card 
-                    className="border-0 p-4 position-relative"
-                    style={{ 
-                        width: '100%', background: 'var(--bg-glass)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-                        border: '1px solid var(--border)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)'
-                    }}
-                >
+        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center py-5" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, overflowY: 'auto' }} onClick={onClose}>
+            <motion.div onClick={(e) => e.stopPropagation()} initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: '100%', maxWidth: '650px', padding: '0 15px' }}>
+                <Card className="border-0 p-4 position-relative" style={{ width: '100%', background: 'var(--bg-glass)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid var(--border)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' }}>
                     {onClose && (
-                        <button 
-                            type="button" onClick={onClose} className="btn position-absolute d-flex align-items-center justify-content-center p-0"
-                            style={{ top: '15px', right: '15px', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 }}
-                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        ><X size={18} /></button>
+                        <button type="button" onClick={onClose} className="btn position-absolute d-flex align-items-center justify-content-center p-0" style={{ top: '15px', right: '15px', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}><X size={18} /></button>
                     )}
-
                     <Card.Body>
                         <div className="text-center mb-4">
                             <h2 className="fw-bold" style={{ color: 'var(--text-main)', letterSpacing: '-0.5px' }}>Create Account</h2>
                             <p className="text-muted small">SecureLaw Management System</p>
                         </div>
-
                         <Form onSubmit={handleSubmit}>
                             <Form.Group className="mb-4">
                                 <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Full Name</Form.Label>
                                 <Form.Control type="text" name="fullName" className="shadow-none" style={inputStyle} value={formData.fullName} placeholder="Enter your full name" onChange={handleChange} required disabled={loading} />
                             </Form.Group>
-
                             <Form.Group className="mb-4">
                                 <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Work Email Address</Form.Label>
                                 <Form.Control type="email" name="email" className="shadow-none" style={inputStyle} value={formData.email} placeholder="name@gmail.com" onChange={handleChange} required disabled={loading} />
                             </Form.Group>
-
                             <Row className="mb-4">
                                 <Col md={6} className="mb-4 mb-md-0">
                                     <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Password</Form.Label>
@@ -179,7 +170,6 @@ const RegisterForm = ({ show = true, onClose }) => {
                                         </InputGroup.Text>
                                     </InputGroup>
                                 </Col>
-
                                 <Col md={6}>
                                     <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Confirm Password</Form.Label>
                                     <InputGroup>
@@ -191,7 +181,6 @@ const RegisterForm = ({ show = true, onClose }) => {
                                     {passwordError && <div className="text-danger small mt-1 fw-bold ms-1" style={{ fontSize: '11px' }}>{passwordError}</div>}
                                 </Col>
                             </Row>
-
                             <Form.Group className="mb-5">
                                 <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Professional Role</Form.Label>
                                 <Form.Select name="role" className="shadow-none" style={inputStyle} value={formData.role} onChange={handleChange} required disabled={loading}>
@@ -199,7 +188,6 @@ const RegisterForm = ({ show = true, onClose }) => {
                                     <option value="SENIOR_LAWYER" style={optionStyle}>Senior Lawyer</option>
                                 </Form.Select>
                             </Form.Group>
-
                             <motion.button whileTap={{ scale: 0.95 }} type="submit" disabled={loading} className="w-100 btn px-4" style={{ backgroundColor: 'var(--accent)', color: '#fff', border: '1px solid var(--border)', borderRadius: '12px', fontWeight: '600', padding: '12px', transition: 'all 0.2s' }}>
                                 {loading ? <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...</> : 'Register Now'}
                             </motion.button>
@@ -207,11 +195,6 @@ const RegisterForm = ({ show = true, onClose }) => {
                     </Card.Body>
                 </Card>
             </motion.div>
-
-            <style>{`
-                .shadow-none:focus { background-color: var(--bg-pill) !important; color: var(--text-main) !important; border-color: var(--accent) !important; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25) !important; }
-                .btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); filter: brightness(1.1); }
-            `}</style>
         </div>
     );
 };

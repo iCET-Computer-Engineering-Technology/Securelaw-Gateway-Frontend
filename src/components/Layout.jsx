@@ -1,26 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LayoutGrid, MessageSquare, History, FileText, Users, Settings } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // ── STATE TO HOLD USER ROLE ──
+  const [isSenior, setIsSenior] = useState(false);
 
-  const navItems = [
-    { icon: <LayoutGrid size={22} />, path: '/dashboard', title: 'Dashboard' },
-    { icon: <MessageSquare size={22} />, path: '/chat', title: 'Chat' },
-    { icon: <History size={22} />, path: '/login-history', title: 'Login History' },
-    { icon: <FileText size={22} />, path: '/collection', title: 'Template Collection' },
-    { icon: <Users size={22} />, path: '/users', title: 'User Management' },
+  // ── DECODE TOKEN TO CHECK ROLE ON LOAD ──
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const role = payload.role || payload.authorities || '';
+        // Check if role contains SENIOR or ADMIN
+        if (role.toUpperCase().includes('SENIOR') || role.toUpperCase().includes('ADMIN')) {
+          setIsSenior(true);
+        }
+      } catch (e) {
+        console.error("Token decode error", e);
+      }
+    }
+  }, []);
+
+  // ── DEFINE WHICH ROLES SEE WHICH MENUS ──
+  const allNavItems = [
+    { icon: <LayoutGrid size={22} />, path: '/dashboard', title: 'Dashboard', seniorOnly: false },
+    { icon: <MessageSquare size={22} />, path: '/chat', title: 'Chat', seniorOnly: false },
+    { icon: <History size={22} />, path: '/login-history', title: 'Login History', seniorOnly: true },
+    { icon: <FileText size={22} />, path: '/collection', title: 'Template Collection', seniorOnly: true },
+    { icon: <Users size={22} />, path: '/users', title: 'User Management', seniorOnly: true },
   ];
 
-  // ── NEW: Check if we are currently on the Chat page ──
+  // Filter items: If it's a "seniorOnly" item, the user MUST be a senior to see it.
+  const visibleNavItems = allNavItems.filter(item => !item.seniorOnly || isSenior);
+
   const isChatPage = location.pathname === '/chat';
 
   return (
-    <div className="d-flex" style={{ minHeight: '100vh', position: 'relative' }}>
+    // ── THE VISUAL FIX: Added backgroundColor: 'var(--bg-main)' to the root wrapper ──
+    <div className="d-flex" style={{ minHeight: '100vh', position: 'relative', backgroundColor: 'var(--bg-main)' }}>
       
       {/* ── EDGE-TO-EDGE GEMINI SIDEBAR ── */}
       <div 
@@ -40,9 +63,8 @@ export default function Layout({ children }) {
         onMouseLeave={() => setIsExpanded(false)}
       >
         
-        {/* Top Icons Area */}
         <div className="d-flex flex-column flex-grow-1 mt-3 w-100">
-          {navItems.map((item) => (
+          {visibleNavItems.map((item) => (
             <div 
               key={item.path} 
               onClick={() => navigate(item.path)}
@@ -115,14 +137,12 @@ export default function Layout({ children }) {
         className="flex-grow-1" 
         style={{ 
           paddingLeft: isExpanded ? '260px' : '72px', 
-          
-          /* CRITICAL FIX: If we are on the Chat page, padding is 0. Otherwise, 20px. */
           paddingTop: isChatPage ? '0px' : '20px', 
           paddingRight: isChatPage ? '0px' : '20px',
-          
           transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           width: '100%',
-          height: 'calc(100vh - 70px)'
+          /* ── THE VISUAL FIX: Changed 'height' to 'minHeight' so the dark background stretches! ── */
+          minHeight: 'calc(100vh - 70px)'
         }}
       >
         {children}
