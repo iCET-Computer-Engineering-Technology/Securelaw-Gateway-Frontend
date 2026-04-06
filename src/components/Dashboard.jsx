@@ -7,7 +7,8 @@ const Dashboard = () => {
     loginCount: 0,
     promptCount: 0,
     registrationCount: 0,
-    recentLogins: [] 
+    recentLogins: [],
+    activeUsers: [] // dev branch එකේ අලුත් state එක
   });
   const [loading, setLoading] = useState(true);
 
@@ -18,16 +19,30 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      
       const data = await AuditLogService.getAllLogs();
       
+      // dev branch එකෙන් ආපු logic එක: Active users ටික extract කරගන්නවා
+      // මෙහිදී 'data.recentLogins' පාවිච්චි කරමු
+      const uniqueActiveUsers = [];
+      const seenNames = new Set();
       
+      if (data.recentLogins) {
+        for (const log of data.recentLogins) {
+          if (!seenNames.has(log.name)) {
+            seenNames.add(log.name);
+            uniqueActiveUsers.push(log);
+          }
+          if (uniqueActiveUsers.length >= 5) break; 
+        }
+      }
+
       setStats({
-        totalLogs: data.totalLogs,
-        loginCount: data.loginEvents,
-        promptCount: data.promptEvents,
-        registrationCount: data.registrations,
-        recentLogins: data.recentLogins
+        totalLogs: data.totalLogs || 0,
+        loginCount: data.loginEvents || 0,
+        promptCount: data.promptEvents || 0,
+        registrationCount: data.registrations || 0,
+        recentLogins: data.recentLogins || [],
+        activeUsers: uniqueActiveUsers 
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -106,9 +121,9 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Recent Activity Table */}
-      <div className="col-12">
-        <div className="glass-panel">
+      {/* Recent Activity Table (Left - 8 columns) */}
+      <div className="col-lg-8 mb-4">
+        <div className="glass-panel h-100">
           <div className="px-4 py-3" style={{ borderBottom: '1px solid var(--border)' }}>
             <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Recent Activity</h5>
           </div>
@@ -124,19 +139,16 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.recentLogins && stats.recentLogins.map((log, index) => (
+                  {stats.recentLogins.length > 0 ? stats.recentLogins.map((log, index) => (
                     <tr key={index}>
                       <td className="fw-medium">{log.name}</td>
                       <td>
-                        <span className="badge bg-primary bg-opacity-75">
-                          {log.role}
-                        </span>
+                        <span className="badge bg-primary bg-opacity-75">{log.role}</span>
                       </td>
                       <td style={{ color: 'var(--text-muted)' }}>{log.date}</td>
                       <td style={{ color: 'var(--text-muted)' }}>{log.time}</td>
                     </tr>
-                  ))}
-                  {(!stats.recentLogins || stats.recentLogins.length === 0) && (
+                  )) : (
                     <tr>
                       <td colSpan="4" className="text-center py-4" style={{ color: 'var(--text-muted)' }}>
                         No recent activity found.
@@ -146,6 +158,47 @@ const Dashboard = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Active Users Panel (Right - 4 columns) */}
+      <div className="col-lg-4 mb-4">
+        <div className="glass-panel h-100">
+          <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+            <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Active Users</h5>
+            <span className="badge bg-success bg-opacity-75 d-flex align-items-center gap-1">
+              <span className="rounded-circle bg-white" style={{ width: '6px', height: '6px' }}></span> Online
+            </span>
+          </div>
+          <div className="p-3">
+            {stats.activeUsers.length > 0 ? (
+              <ul className="list-group list-group-flush bg-transparent">
+                {stats.activeUsers.map((user, index) => (
+                  <li key={index} className="list-group-item bg-transparent d-flex justify-content-between align-items-center px-2 py-3" style={{ borderBottom: '1px solid var(--border)', borderTop: 'none' }}>
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="position-relative">
+                        <div className="rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-sm" style={{ width: '42px', height: '42px', backgroundColor: 'var(--bg-pill)', color: 'var(--text-main)', fontSize: '1.2rem' }}>
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="position-absolute bottom-0 end-0 p-1 bg-success border border-dark rounded-circle" style={{ width: '12px', height: '12px', transform: 'translate(20%, 20%)' }}></span>
+                      </div>
+                      <div>
+                        <h6 className="mb-1 fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{user.name}</h6>
+                        <small style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                          {user.time ? `Logged in at ${user.time}` : 'Active now'}
+                        </small>
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center py-5">
+                 <i className="bi bi-people fs-1 d-block mb-2" style={{ color: 'var(--text-muted)' }}></i>
+                 <span style={{ color: 'var(--text-muted)' }}>No active users right now.</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
