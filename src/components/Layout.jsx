@@ -16,7 +16,19 @@ export default function Layout({ children }) {
     { icon: <Users size={22} />, path: '/users', title: 'User Management' },
   ];
 
-  // ── NEW: Check if we are currently on the Chat page ──
+  // ── NEW: Logout Logic ──
+  const handleLogout = () => {
+    // Frontend storage එකෙන් විතරක් දත්ත අයින් කරනවා
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    
+    console.log("Logged out from frontend. Storage cleared.");
+    
+    // කෙලින්ම Login පේජ් එකට යවනවා
+    navigate('/login');
+  };
+
+  // Check if we are currently on the Chat page
   const isChatPage = location.pathname === '/chat';
 
   return (
@@ -88,10 +100,11 @@ export default function Layout({ children }) {
           ))}
         </div>
 
-        {/* Bottom Settings Icon */}
+        {/* Bottom Settings Icon (Acts as Logout) */}
         <div className="mb-4 w-100">
           <div 
             className="d-flex align-items-center"
+            onClick={handleLogout} // මුළු row එකම එබුවම logout වෙන්න දුන්නා
             style={{ 
               cursor: 'pointer', color: 'var(--text-muted)', margin: '4px 12px', padding: '12px 0', borderRadius: '12px', 
               transition: 'all 0.2s ease', whiteSpace: 'nowrap' 
@@ -102,8 +115,16 @@ export default function Layout({ children }) {
             <div style={{ minWidth: '48px', display: 'flex', justifyContent: 'center' }}>
               <Settings size={22} />
             </div>
-            <span style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s ease', fontWeight: 500, fontSize: '14px', marginLeft: '4px' }}>
-              Settings
+            <span 
+                style={{ 
+                    opacity: isExpanded ? 1 : 0, 
+                    transition: 'opacity 0.2s ease', 
+                    fontWeight: 500, 
+                    fontSize: '14px', 
+                    marginLeft: '4px'
+                }} 
+            >
+                Settings (Logout)
             </span>
           </div>
         </div>
@@ -115,11 +136,8 @@ export default function Layout({ children }) {
         className="flex-grow-1" 
         style={{ 
           paddingLeft: isExpanded ? '260px' : '72px', 
-          
-          /* CRITICAL FIX: If we are on the Chat page, padding is 0. Otherwise, 20px. */
           paddingTop: isChatPage ? '0px' : '20px', 
           paddingRight: isChatPage ? '0px' : '20px',
-          
           transition: 'padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           width: '100%',
           height: 'calc(100vh - 70px)'

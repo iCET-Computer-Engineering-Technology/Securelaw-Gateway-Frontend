@@ -89,17 +89,19 @@ const NavigationBar = () => {
               style={{ cursor: 'pointer', color: 'var(--text-main)', transition: 'transform 0.2s' }}
               onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
               onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              title="Toggle Theme"
+              title="Toggle Theme"d   
             >
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </div>
 
             {/* User Login/Logout */}
-            <NavLink
-              to="/profile-card"
-              onClick={closeMenu}
-              className="nav-icon"
-              title="Profile"
+            <NavLink 
+                to="/login"
+                onClick={closeMenu} 
+                style={{ cursor: 'pointer', color: 'var(--text-main)', transition: 'transform 0.2s' }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                title="Login / Logout"
             >
               <User size={20} />
             </NavLink>

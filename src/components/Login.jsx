@@ -10,48 +10,58 @@ const Login = () => {
     const [loading, setLoading] = useState(false); 
     const navigate = useNavigate(); 
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        
+   const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+        // Fetch IP Address
+        let ipAddress = "Unknown";
         try {
-            // Fetch IP Address for Audit Logs
-            let ipAddress = "Unknown";
-            try {
-                const ipRes = await axios.get('https://api.ipify.org?format=json');
-                ipAddress = ipRes.data.ip;
-            } catch (err) {
-                console.error("Could not fetch IP", err);
-            }
-
-            const loginRequest = {
-                email: email,
-                password: password,
-                ipAddress: ipAddress,
-                deviceInfo: window.navigator.userAgent,
-                loginDate: new Date().toLocaleDateString(),
-                loginTime: new Date().toLocaleTimeString()
-            };
-
-            // Post to Backend API
-            const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
-            const { token, role } = response.data; 
-
-            if (token) {
-                localStorage.setItem("token", token);
-                localStorage.setItem("role", role); 
-                console.log("Login Success!");
-                navigate('/dashboard');
-            }
-
-        } catch (error) {
-            console.error("Login Error:", error);
-            const errorMsg = error.response?.data?.message || "Invalid email or password!";
-            alert(errorMsg);
-        } finally {
-            setLoading(false);
+            const ipRes = await axios.get('https://api.ipify.org?format=json');
+            ipAddress = ipRes.data.ip;
+        } catch (err) {
+            console.error("Could not fetch IP", err);
         }
-    };
+
+        const loginRequest = {
+            email: email,
+            password: password,
+            ipAddress: ipAddress,
+            deviceInfo: window.navigator.userAgent,
+            loginDate: new Date().toLocaleDateString(),
+            loginTime: new Date().toLocaleTimeString()
+        };
+
+        // API Call
+        const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
+        
+        
+        console.log("Full Backend Response:", response.data); 
+
+        const { token, role } = response.data; 
+
+        
+        console.log("Extracted Token:", token);
+        console.log("Extracted Role:", role);
+
+        if (token) {
+            localStorage.setItem("token", token);
+            localStorage.setItem("role", role); 
+            console.log("Token successfully saved to LocalStorage!");
+            navigate('/dashboard');
+        } else {
+            console.warn("Login response did not contain a token!");
+        }
+
+    } catch (error) {
+        console.error("Login Error Details:", error.response?.data || error.message);
+        const errorMsg = error.response?.data?.message || "Invalid email or password!";
+        alert(errorMsg);
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
