@@ -5,7 +5,7 @@ const ComparisonModal = ({ show, handleClose, originalText, maskedText }) => {
   const [editableMasked, setEditableMasked] = useState(maskedText);
 
   // 2. Props වලින් එන maskedText එක වෙනස් වුණොත් (අලුත් ෆයිල් එකක් දැම්මොත්) ස්ටේට් එක අප්ඩේට් කරනවා
-  useEffect(() => {
+  useEffect(() => { 
     setEditableMasked(maskedText);
   }, [maskedText]);
 

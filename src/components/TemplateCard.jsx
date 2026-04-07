@@ -12,7 +12,7 @@ export default function TemplateCard({ template, onClick }) {
         backgroundColor: 'var(--bg-pill)',
         backdropFilter: 'blur(16px)',
         WebkitBackdropFilter: 'blur(16px)',
-        borderRadius: '16px', 
+        borderRadius: '16px',     
         cursor: 'pointer',
         border: '1px solid var(--border)', 
         transition: 'all 0.2s ease',

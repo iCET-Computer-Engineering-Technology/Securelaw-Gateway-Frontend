@@ -21,6 +21,7 @@ import UserManagement from './UserManagement';
 import ChatBox from './pages/ChatBox';         
 import RegisterForm from './components/RegisterForm';
 import SecureChat from './pages/Securechat'; 
+import ProfileCard from './components/ProfileCard'; // Ensure this is imported
 
 function App() {
   const [showModal, setShowModal] = useState(false);
@@ -31,12 +32,12 @@ function App() {
         <div className="App min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-main)' }}>
           
           <Routes>
-            {/* ── CRITICAL FIX: Make the default root url '/' redirect directly to Login ── */}
+            {/* ── Redirect directly to Login ── */}
             <Route path="/" element={<Navigate to="/login" replace />} />
             
             <Route path="/login" element={<Login />} />
 
-            {/* All other routes wrapped inside the Main Layout with Sidebar and Navbar */}
+            {/* All other routes wrapped inside the Main Layout */}
             <Route
               path="*"
               element={
@@ -45,8 +46,8 @@ function App() {
                   
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
-                      {/* Fallback internal route (if they try to go somewhere that doesn't exist) */}
-                      <Route path="*" element={<Navigate to="/chat" replace />} />
+                      {/* Default internal route */}
+                      <Route path="/" element={<Navigate to="/chat" replace />} />
                       
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />
@@ -60,6 +61,12 @@ function App() {
                       <Route path="/prompt-history" element={<PromptHistory />} />
                       <Route path="/registration-history" element={<RegistrationHistory />} />
                       <Route path="/messages" element={<SecureChat />} />
+
+                      {/* ── NEW ROUTE: Added from dev branch ── */}
+                      <Route path="/profile" element={<ProfileCard />} />
+
+                      {/* Fallback */}
+                      <Route path="*" element={<Navigate to="/chat" replace />} />
                     </Routes>
                   </main>
 

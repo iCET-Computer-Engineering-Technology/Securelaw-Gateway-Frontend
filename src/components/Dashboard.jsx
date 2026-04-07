@@ -21,14 +21,18 @@ const Dashboard = () => {
       setLoading(true);
       const data = await AuditLogService.getAllLogs();
       
-      
-      
+      // 🚀 Inspect -> Console එකේ මේක බලන්න. Backend එකෙන් එන නියම නම් ටික මෙතන තියෙනවා.
+      console.log("Dashboard Data received:", data); 
+
       const uniqueActiveUsers = [];
       const seenNames = new Set();
       
-      if (data.recentLogins) {
-        for (const log of data.recentLogins) {
-          if (!seenNames.has(log.name)) {
+      // දත්ත Array එකක්ද කියලා check කරලා loop එක රන් කරනවා
+      const recentLoginsArray = data.recentLogins || data.recentActivity || [];
+
+      if (Array.isArray(recentLoginsArray)) {
+        for (const log of recentLoginsArray) {
+          if (log.name && !seenNames.has(log.name)) {
             seenNames.add(log.name);
             uniqueActiveUsers.push(log);
           }
@@ -36,14 +40,16 @@ const Dashboard = () => {
         }
       }
 
+      // Backend එකේ Keys සහ Frontend එකේ Keys මෙතනදී ගලපනවා
       setStats({
-        totalLogs: data.totalLogs || 0,
-        loginCount: data.loginEvents || 0,
-        promptCount: data.promptEvents || 0,
-        registrationCount: data.registrations || 0,
-        recentLogins: data.recentLogins || [],
+        totalLogs: data.totalLogs || data.allLogsCount || 0,
+        loginCount: data.loginEvents || data.totalLogins || 0,
+        promptCount: data.promptEvents || data.totalPrompts || 0,
+        registrationCount: data.registrations || data.registrationEvents || 0,
+        recentLogins: recentLoginsArray,
         activeUsers: uniqueActiveUsers 
       });
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
