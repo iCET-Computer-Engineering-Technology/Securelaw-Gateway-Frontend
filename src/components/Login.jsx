@@ -79,7 +79,15 @@ const Login = () => {
         } finally {
             setLoading(false);
         }
-    };
+
+    } catch (error) {
+        console.error("Login Error Details:", error.response?.data || error.message);
+        const errorMsg = error.response?.data?.message || "Invalid email or password!";
+        alert(errorMsg);
+    } finally {
+        setLoading(false);
+    }
+};
 
     return (
         <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
 
 // Context & Layouts
 import { ThemeProvider } from './context/Themecontext';
@@ -23,7 +24,6 @@ import SecureChat from './pages/Securechat';
 import ProfileCard from './components/ProfileCard';
 
 function App() {
-  
   const [showModal, setShowModal] = useState(false);
 
   return (
@@ -32,20 +32,22 @@ function App() {
         <div className="App min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-main)' }}>
           
           <Routes>
-            {/* Login page without Layout/Navbar */}
+            {/* ── Redirect directly to Login ── */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
             <Route path="/login" element={<Login />} />
 
-            {/* All other routes wrapped in Layout */}
+            {/* All other routes wrapped inside the Main Layout */}
             <Route
               path="*"
               element={
                 <Layout>
-                  <NavigationBar onOpenRegister={() => setShowModal(true)} />
+                  <NavigationBar />
                   
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
-                      {/* Default Route */}
-                      <Route path="/" element={<Navigate to="/collection" replace />} />
+                      {/* Default internal route */}
+                      <Route path="/" element={<Navigate to="/chat" replace />} />
                       
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />
@@ -60,17 +62,16 @@ function App() {
                       <Route path="/registration-history" element={<RegistrationHistory />} />
                       <Route path="/messages" element={<SecureChat />} />
 
-                      {/* ── NEW ROUTE: Added the profile page route here ── */}
+                      {/* ── NEW ROUTE: Added from dev branch ── */}
                       <Route path="/profile" element={<ProfileCard />} />
-                      
+
+                      {/* Fallback */}
+                      <Route path="*" element={<Navigate to="/chat" replace />} />
                     </Routes>
                   </main>
 
-                  {/* RegisterForm Modal (from dev branch) */}
-                  <RegisterForm
-                    show={showModal}
-                    onClose={() => setShowModal(false)}
-                  />
+                  <RegisterForm show={showModal} onClose={() => setShowModal(false)} />
+                  
                 </Layout>
               }
             />

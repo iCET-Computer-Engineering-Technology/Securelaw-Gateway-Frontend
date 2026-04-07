@@ -91,6 +91,7 @@ const NavigationBar = () => {
     }
 
     localStorage.removeItem('token');
+    localStorage.removeItem('role'); // Role එකත් අයින් කරන එක හොඳයි
     setShowProfileMenu(false);
     navigate('/login');
   };
@@ -109,7 +110,6 @@ const NavigationBar = () => {
         </button>
         
         <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`} id="navbarNav">
-          
           <ul className="navbar-nav ms-auto gap-1 me-lg-4">
             <NavItem to="/dashboard" icon="bi-speedometer2" label="Dashboard" onClick={closeMenu} />
             
@@ -124,17 +124,17 @@ const NavigationBar = () => {
 
           <div className="d-flex align-items-center gap-4 ps-lg-4 mt-3 mt-lg-0" style={{ borderLeft: '1px solid var(--border)' }}>
             
-            <div className="position-relative" style={{ cursor: 'pointer', color: 'var(--text-main)', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Notifications">
+            <div className="position-relative" style={{ cursor: 'pointer', color: 'var(--text-main)' }} title="Notifications">
               <Bell size={20} />
-              <span className="position-absolute translate-middle p-1 bg-danger border border-light rounded-circle" style={{ top: '4px', right: '-8px' }}>
-                <span className="visually-hidden">New alerts</span>
-              </span>
+              <span className="position-absolute translate-middle p-1 bg-danger border border-light rounded-circle" style={{ top: '4px', right: '-8px' }}></span>
             </div>
 
-            <div onClick={() => { setIsDark(!isDark); closeMenu(); }} style={{ cursor: 'pointer', color: 'var(--text-main)', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Toggle Theme">
+            {/* Theme Toggle */}
+            <div onClick={() => { setIsDark(!isDark); closeMenu(); }} style={{ cursor: 'pointer', color: 'var(--text-main)' }} title="Toggle Theme">
               {isDark ? <Sun size={20} /> : <Moon size={20} />}
             </div>
             
+            {/* Profile Dropdown */}
             <div className="position-relative" ref={profileMenuRef}>
               <div onClick={() => setShowProfileMenu(!showProfileMenu)} style={{ cursor: 'pointer', color: 'var(--text-main)', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Profile Menu">
                 <User size={20} />
@@ -146,7 +146,7 @@ const NavigationBar = () => {
                     <div className="rounded-circle d-flex align-items-center justify-content-center mb-2" style={{ width: '50px', height: '50px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '1.5rem', fontWeight: 'bold' }}>
                       {currentUser.initials}
                     </div>
-                    <h6 className="mb-0 fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>{currentUser.name}</h6>
+                    <h6 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>{currentUser.name}</h6>
                     <small style={{ color: 'var(--text-muted)' }}>{currentUser.email}</small>
                   </div>
 
@@ -160,7 +160,6 @@ const NavigationBar = () => {
                 </div>
               )}
             </div>
-
           </div>
         </div>
       </div>
@@ -173,8 +172,6 @@ const NavItem = ({ to, icon, label, onClick }) => (
     <NavLink 
       to={to} onClick={onClick} className={({ isActive }) => `nav-link rounded-pill px-3 py-2 d-flex align-items-center ${isActive ? 'active' : ''}`}
       style={({ isActive }) => ({ color: isActive ? 'var(--text-main)' : 'var(--text-muted)', backgroundColor: isActive ? 'var(--bg-pill)' : 'transparent', fontWeight: isActive ? '600' : '500', transition: 'all 0.2s ease' })}
-      onMouseEnter={(e) => { if (!e.currentTarget.classList.contains('active')) { e.currentTarget.style.color = 'var(--text-main)'; e.currentTarget.style.backgroundColor = 'var(--bg-input)'; } }}
-      onMouseLeave={(e) => { if (!e.currentTarget.classList.contains('active')) { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.backgroundColor = 'transparent'; } }}
     >
       <i className={`bi ${icon} me-2`}></i> {label}
     </NavLink>

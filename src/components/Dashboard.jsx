@@ -46,6 +46,7 @@ const Dashboard = () => {
         if (uniqueActiveUsers.length >= 5) break; 
       }
 
+      // Backend එකේ Keys සහ Frontend එකේ Keys මෙතනදී ගලපනවා
       setStats({
         totalLogs: logs.length,
         loginCount,
@@ -54,6 +55,7 @@ const Dashboard = () => {
         recentLogins: sortedLogs.slice(0, 5), 
         activeUsers: uniqueActiveUsers 
       });
+
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     } finally {
