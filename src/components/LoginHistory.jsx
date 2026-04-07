@@ -22,7 +22,19 @@ const LoginHistory = () => {
     try {
       setLoading(true);
       const allLogs = await AuditLogService.getAllLogs();
-      const loginLogs = allLogs.filter(log => log.type === 'LOGIN' || log.type === 'Admin');
+      
+      if (!Array.isArray(allLogs)) return;
+
+      // ── THE FIX: Fetch both LOGIN and LOGOUT events! ──
+      const loginLogs = allLogs.filter(log => 
+        log.type?.toUpperCase() === 'LOGIN' || 
+        log.type?.toUpperCase() === 'LOGOUT' || 
+        log.type?.toUpperCase() === 'ADMIN'
+      );
+
+      // Sort by newest first so the latest actions are at the top
+      loginLogs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
+
       setLogs(loginLogs);
       setFilteredLogs(loginLogs);
     } catch (error) {
@@ -37,14 +49,15 @@ const LoginHistory = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(log =>
-        log.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.ipAddress.includes(searchTerm) ||
-        log.device.toLowerCase().includes(searchTerm.toLowerCase())
+        log.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.ipAddress?.includes(searchTerm) ||
+        log.device?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (dateFilter) {
       filtered = filtered.filter(log => {
+        if (!log.dateTime) return false;
         const logDate = new Date(log.dateTime).toDateString();
         const filterDate = new Date(dateFilter).toDateString();
         return logDate === filterDate;
@@ -81,7 +94,7 @@ const LoginHistory = () => {
       <div className="col-12 mb-4">
         <h2 className="mb-4 fw-bold" style={{ color: 'var(--text-main)' }}>
           <i className="bi bi-box-arrow-in-right me-2" style={{ color: 'var(--accent)' }}></i>
-          Login History
+          Login & Logout History
         </h2>
       </div>
 
@@ -129,7 +142,7 @@ const LoginHistory = () => {
       <div className="col-12">
         <div className="glass-panel">
           <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
-            <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Login Events</h5>
+            <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Session Events</h5>
             <span className="badge" style={{ backgroundColor: 'var(--accent)' }}>Total: {filteredLogs.length}</span>
           </div>
           <div className="p-3">
@@ -147,18 +160,23 @@ const LoginHistory = () => {
                 </thead>
                 <tbody>
                   {currentItems.length > 0 ? (
-                    currentItems.map((log, index) => (
+                    currentItems.map((log, index) => {
+                      const isLogout = log.type?.toUpperCase() === 'LOGOUT';
+                      
+                      return (
                       <tr key={log.id || index}>
                         <td style={{ color: 'var(--text-muted)' }}>{indexOfFirstItem + index + 1}</td>
-                        <td className="fw-medium">{log.name}</td>
+                        <td className="fw-medium">{log.name || 'Unknown'}</td>
                         <td style={{ color: 'var(--text-muted)' }}>
                           <i className="bi bi-calendar me-1"></i>
-                          {new Date(log.dateTime).toLocaleString()}
+                          {log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}
                         </td>
-                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress}</code></td>
+                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || log.ip || '-'}</code></td>
                         <td>
-                          <span className="badge bg-success bg-opacity-75">
-                            <i className="bi bi-shield-check me-1"></i> {log.type}
+                          {/* ── DYNAMIC BADGE COLOR FOR LOGIN VS LOGOUT ── */}
+                          <span className={`badge ${isLogout ? 'bg-secondary' : 'bg-success'} bg-opacity-75`}>
+                            <i className={`bi ${isLogout ? 'bi-box-arrow-left' : 'bi-shield-check'} me-1`}></i> 
+                            {log.type || 'UNKNOWN'}
                           </span>
                         </td>
                         <td style={{ color: 'var(--text-muted)' }}>
@@ -166,12 +184,12 @@ const LoginHistory = () => {
                           {log.device || 'Unknown'}
                         </td>
                       </tr>
-                    ))
+                    )})
                   ) : (
                     <tr>
                       <td colSpan="6" className="text-center py-5">
                         <i className="bi bi-inbox fs-1 d-block mb-2" style={{ color: 'var(--text-muted)' }}></i>
-                        <span style={{ color: 'var(--text-muted)' }}>No login records found</span>
+                        <span style={{ color: 'var(--text-muted)' }}>No records found</span>
                       </td>
                     </tr>
                   )}

@@ -9,7 +9,7 @@ const TemplateSearchBar = ({ onResults }) => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
-      
+        
       try {
         if (!keyword.trim()) {
           const response = await axios.get("http://localhost:8080/api/templates");

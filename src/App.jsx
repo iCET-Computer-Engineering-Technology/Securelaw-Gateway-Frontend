@@ -21,7 +21,7 @@ import UserManagement from './UserManagement';
 import ChatBox from './pages/ChatBox';         
 import RegisterForm from './components/RegisterForm';
 import SecureChat from './pages/Securechat'; 
-import ProfileCard from './components/ProfileCard'; // Ensure this is imported
+import ProfileCard from './components/ProfileCard';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
