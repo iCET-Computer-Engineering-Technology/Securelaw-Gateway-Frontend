@@ -45,7 +45,7 @@ function App() {
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
                       {/* Default Route */}
-                      <Route path="/" element={<Navigate to="/collection" replace />} />
+                      <Route path="/" element={<Navigate to="/login" replace />} />
                       
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />

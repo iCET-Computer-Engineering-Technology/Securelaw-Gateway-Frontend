@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Sun, Moon, User, Bell, LogOut } from 'lucide-react'; 
 import axios from 'axios';
-import AuditLogService from '../services/AuditLogService'; // ── NEW: Import to save logout log
+import AuditLogService from '../services/AuditLogService'; 
 
 const NavigationBar = () => {
   const [isDark, setIsDark] = useState(true); 
@@ -59,7 +59,6 @@ const NavigationBar = () => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
-  // Helper for Device info
   const getDeviceName = () => {
     const ua = window.navigator.userAgent;
     if (ua.includes("Windows")) return "Windows PC";
@@ -70,7 +69,6 @@ const NavigationBar = () => {
     return "Unknown Browser";
   };
 
-  // ── UPDATED: Now saves a LOGOUT event before clearing token ──
   const handleLogout = async () => {
     try {
       let currentIp = "Unknown";
@@ -81,7 +79,7 @@ const NavigationBar = () => {
 
       const logData = {
           name: currentUser.name,
-          type: 'LOGOUT', // Tells dashboard they left!
+          type: 'LOGOUT', 
           ip: currentIp, 
           device: getDeviceName()
       };
@@ -99,7 +97,7 @@ const NavigationBar = () => {
     <nav className="navbar navbar-expand-lg fixed-top shadow-sm" style={{ background: 'var(--bg-glass)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderBottom: '1px solid var(--border)', transition: 'background 0.3s ease, border 0.3s ease' }}>
       <div className="container-fluid px-4">
         
-        <NavLink className="navbar-brand fw-bold d-flex align-items-center" to="/dashboard" onClick={closeMenu} style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
+        <NavLink className="navbar-brand fw-bold d-flex align-items-center" to="/chat" onClick={closeMenu} style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
           <i className="bi bi-shield-lock me-2" style={{ color: 'var(--accent)' }}></i>
           Audit Logs System
         </NavLink>
@@ -111,12 +109,15 @@ const NavigationBar = () => {
         <div className={`collapse navbar-collapse ${isMenuOpen ? 'show' : ''}`} id="navbarNav">
           
           <ul className="navbar-nav ms-auto gap-1 me-lg-4">
-            <NavItem to="/dashboard" icon="bi-speedometer2" label="Dashboard" onClick={closeMenu} />
             
+            {/* ── VISIBLE TO EVERYONE ── */}
+            <NavItem to="/prompt-history" icon="bi-chat-dots" label="Prompt History" onClick={closeMenu} />
+            
+            {/* ── VISIBLE TO SENIORS ONLY ── */}
             {isSenior && (
               <>
+                <NavItem to="/dashboard" icon="bi-speedometer2" label="Dashboard" onClick={closeMenu} />
                 <NavItem to="/login-history" icon="bi-box-arrow-in-right" label="Login History" onClick={closeMenu} />
-                <NavItem to="/prompt-history" icon="bi-chat-dots" label="Prompt History" onClick={closeMenu} />
                 <NavItem to="/registration-history" icon="bi-person-plus" label="Registration History" onClick={closeMenu} />
               </>
             )}
