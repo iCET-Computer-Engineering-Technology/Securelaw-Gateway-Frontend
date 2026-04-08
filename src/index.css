@@ -1,111 +1,474 @@
-/* :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+/* =========================================================
+   1. THEME VARIABLES (Light & Dark Mode)
+   ========================================================= */
+:root {
+  /* --- LIGHT MODE (Standard Enterprise White/Gray) --- */
+  --bg-main: #f4f6f8;       
+  --bg-pill: #e9ecef;       
+  --bg-glass: #ffffff;      
+  --bg-card: #ffffff;       
+  --bg-input: #ffffff;
+  
+  --text-main: #212529;     
+  --text-muted: #6c757d;    
+  --border: #dee2e6;        
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  --bg-grid-white: transparent; 
+  --text-gallery-small: var(--text-muted);
+  --shadow-premium: 0 2px 8px rgba(0,0,0,0.05); 
+  
+  --glow: none;             
+  --accent: #0d6efd;        
+}
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+[data-theme='dark'] {
+  /* --- DARK MODE (Professional Premium Dark Gray) --- */
+  --bg-main: #1a1c23;       
+  --bg-pill: #252830;       
+  --bg-glass: #252830;      
+  --bg-card: #2d3039;       
+  --bg-input: #1a1c23;      
+  
+  --text-main: #f8f9fa;     
+  --text-muted: #adb5bd;    
+  --border: #343a40;        
+
+  --bg-grid-white: transparent; 
+  --text-gallery-small: var(--text-muted);
+  --shadow-premium: 0 4px 12px rgba(0,0,0,0.2);
+  
+  --glow: none;             
+  --accent: #3b82f6;        
+}
+
+/* =========================================================
+   2. GLOBAL LAYOUT LOCKS (The "Native App" Feel)
+   ========================================================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  /* CRITICAL: Permanently kills the outer browser scrollbar */
+  overflow: hidden !important; 
+  background-color: var(--bg-main) !important;
+  color: var(--text-main) !important;
+  font-family: 'Inter', 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
+/* Force React Root and App containers to never stretch beyond the screen */
+#root, .App {
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+/* Lock the main wrapper so ONLY the components inside it can scroll */
+main.flex-grow-1 {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
+/* =========================================================
+   3. GLOBAL PREMIUM SCROLLBARS (Overrides default white bars)
+   ========================================================= */
+
+/* This targets EVERY scrollbar in your entire app instantly! */
+::-webkit-scrollbar { 
+  width: 6px; 
+  height: 6px; 
 }
 
-code,
-.counter {
-  font-family: var(--mono);
+::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+
+::-webkit-scrollbar-thumb { 
+  background: var(--border); /* Uses your premium dark layout borders */
+  border-radius: 10px; 
+}
+
+::-webkit-scrollbar-thumb:hover { 
+  background: var(--text-muted); 
+}
+
+/* Fallback for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* =========================================================
+   4. GLASS UI UTILITIES & OVERRIDES
+   ========================================================= */
+.floating-pill {
+  background: var(--bg-glass); 
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow-premium);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.glass-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow-premium);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Tables, Badges, Modals */
+.table { color: var(--text-main) !important; }
+.table-hover tbody tr:hover { background-color: var(--bg-input) !important; cursor: pointer; }
+.badge { font-size: 0.85em; padding: 0.5em 0.85em; background-color: var(--bg-pill) !important; border: 1px solid var(--border); color: var(--text-main) !important; }
+
+.table, .table th, .table td { background-color: transparent !important; color: var(--text-main) !important; border-color: var(--border) !important; }
+.table thead th { background-color: var(--bg-pill) !important; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+  transition: transform 0.2s ease;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4); }
+
+.theme-toggle-btn {
+  width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0;
+}
+.theme-toggle-btn:hover { transform: translateY(-2px) scale(1.05); }
+
+/* Form Inputs */
+.modern-input {
+  border: 1.5px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 14px 18px !important;
+  font-size: 15px !important;
+  background-color: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.modern-input:focus {
+  background-color: var(--bg-card) !important;
+  border-color: var(--accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+}
+
+
+/* ======================
+   5. AI CHATBOX & SIDEBAR STYLES 
+   ====================== */
+.chatbox-root {
+  display: flex;
+  height: 100%; 
+  width: 100%;
+  overflow: hidden;
+  background: transparent; 
+  color: var(--text-main);
+}
+
+/* Sidebar Area */
+.sidebar {
+  background: var(--bg-glass); 
+  border-right: 1px solid var(--border);
+  height: 100% !important; 
+  border-radius: 0 !important; 
+  margin: 0 !important; 
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px 0 12px;
+  gap: 10px;
+  overflow: hidden; 
+}
+.sidebar .custom-scrollbar {
+  padding-bottom: 20px; 
+}
+
+/* Template Grid (Sidebar 2-Column Layout) */
+.template-grid { 
+  display: grid; 
+  grid-template-columns: repeat(2, 1fr); /* Forces exactly 2 columns */
+  gap: 12px; 
+  flex: 1; 
+  overflow-y: auto; 
+  overflow-x: hidden; 
+  padding: 0 8px 20px 8px; 
+}
+
+/* The Boxy Sidebar Cards */
+.sidebar-template-card {
+  background: var(--bg-input); 
+  border: 1px solid var(--border);
+  border-radius: 12px; 
+  padding: 16px 8px; 
+  display: flex;
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; /* Centers content vertically */
+  gap: 8px;
+  cursor: pointer; 
+  transition: all 0.2s ease-in-out;
+  min-height: 110px; /* CRITICAL FIX: Forces the large boxy shape! */
+  width: 100%; 
+}
+
+.sidebar-template-card:hover {
+  background: var(--bg-card); 
+  transform: translateY(-2px); 
+  box-shadow: var(--shadow-premium);
+}
+
+.sidebar-template-card.selected { 
+  background: rgba(13, 110, 253, 0.1); 
+  border-color: var(--accent); 
+}
+
+/* Sidebar Scrollbars */
+.sidebar ::-webkit-scrollbar { width: 5px; }
+.sidebar ::-webkit-scrollbar-track { background: transparent; }
+.sidebar ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.sidebar ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* Main Chat Area */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: transparent; 
+  overflow: hidden; 
+}
+
+/* Scrollable Chat History */
+.chat-content-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat-thread {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-msg-row {
+  width: 100%;
+  display: flex;
+}
+
+.chat-msg-user {
+  justify-content: flex-end;
+}
+
+.chat-msg-assistant {
+  justify-content: flex-start;
+}
+
+.chat-msg-bubble {
+  max-width: min(78ch, 90%);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-premium);
+}
+
+.chat-msg-bubble-user {
+  background: linear-gradient(135deg, rgba(13, 110, 253, 0.2), rgba(13, 110, 253, 0.08));
+}
+
+.chat-msg-bubble-assistant {
+  background: var(--bg-glass);
+}
+
+.chat-msg-bubble-error {
+  border-color: rgba(220, 53, 69, 0.5);
+  background: rgba(220, 53, 69, 0.08);
+}
+
+.chat-msg-template {
   display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 6px 9px;
+  margin-bottom: 8px;
+  border-radius: 10px;
+  background: var(--bg-pill);
+  border: 1px solid var(--border);
 }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
-} */
+.chat-msg-template-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+}
+
+.chat-msg-template-text {
+  font-size: 12px;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-msg-section-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chat-msg-text {
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-hero {
+  text-align: center; display: flex; flex-direction: column;
+  align-items: center; gap: 6px; margin-top: 15vh; margin-bottom: 40px;
+}
+.chat-secured-badge, .chat-secured-ai { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; text-transform: uppercase; }
+.chat-headline { font-size: 34px; font-weight: 600; color: var(--text-main); margin-top: 10px; }
+
+/* Fixed Input Area */
+.chat-input-container {
+  flex-shrink: 0; padding: 20px; display: flex; justify-content: center; background: transparent;
+}
+
+.composer-template-preview {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-glass);
+  box-shadow: var(--shadow-premium);
+}
+
+.composer-template-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--bg-pill);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  flex-shrink: 0;
+}
+
+.composer-template-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.composer-template-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.composer-template-type {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.composer-template-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+
+.composer-template-remove:hover {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: #fff;
+}
+
+/* Ask Bar (Gemini Pill) */
+.ask-bar-wrapper {
+  width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  background: var(--bg-input); border: 1px solid var(--border);
+  border-radius: 20px; padding: 10px 12px 10px 12px; min-height: 62px;
+  box-shadow: var(--shadow-premium); transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ask-bar-wrapper:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1); }
+.ask-bar-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  width: 100%;
+}
+.ask-bar-input {
+  flex: 1; background: transparent; border: none; outline: none; color: var(--text-main);
+  font-size: 15px; line-height: 1.45; min-height: 24px; max-height: 180px; padding: 4px 6px;
+  resize: none; overflow-y: auto;
+}
+.ask-bar-input::placeholder { color: var(--text-muted); }
+
+.ask-bar-send {
+  background: var(--bg-pill); border: 1px solid var(--border);
+  border-radius: 50%; color: var(--text-main); width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.18s; flex-shrink: 0;
+}
+.ask-bar-send:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.composer-template-preview-inline {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  background: var(--bg-pill);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.sidebar-toggle {
+  position: absolute; left: 15px; top: 15px; z-index: 10;
+  background: var(--bg-pill); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-main); width: 32px; height: 32px; cursor: pointer;
+}
+
+/* =========================================================
+   6. ANIMATIONS
+   ========================================================= */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-animation {
+  animation: spin 1s linear infinite;
+}
