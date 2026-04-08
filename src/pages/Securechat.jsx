@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const BASE_URL = "http://localhost:8080";
-const CURRENT_USER_ID = 1; // Placeholder until hooked up to real Auth
+const CURRENT_USER_ID = 1;
 
 const MOCK_CONTACTS = [
   { id: 2, name: "Kasun Perera", role: "Senior Attorney", initials: "KP", online: true },
@@ -12,6 +12,7 @@ const MOCK_CONTACTS = [
 
 const ChatAPI = {
   sendMessage: async (senderId, receiverId, messageContent) => {
+    
     const res = await fetch(`${BASE_URL}/api/chat/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,6 +23,7 @@ const ChatAPI = {
   },
 
   getHistory: async (senderId, receiverId) => {
+    
     const res = await fetch(`${BASE_URL}/api/chat/history/${senderId}/${receiverId}`);
     if (!res.ok) throw new Error("Failed to fetch history");
     return res.json();
