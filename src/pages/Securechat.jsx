@@ -60,7 +60,7 @@ function Avatar({ initials, size = 40, online = false }) {
 
 function ContactItem({ contact, isActive, onClick, lastMessage }) {
   return (
-    <div onClick={() => onClick(contact)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", cursor: "pointer", borderLeft: isActive ? "3px solid var(--accent)" : "3px solid transparent", background: isActive ? "var(--bg-pill)" : "transparent", transition: "all 0.15s ease", borderBottom: "1px solid var(--border)" }}>
+    <div onClick={() => onClick(contact)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", cursor: "pointer", borderLeft: isActive ? "3px solid var(--accent)" : "3px solid transparent", background: isActive ? "var(--bg-pill)" : "transparent", transition: "all 0.15s ease", borderBottom: "1px solid var(--border)" }} onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--bg-input)"; }} onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
       <Avatar initials={contact.initials} size={42} online={contact.online} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -201,24 +201,14 @@ export default function SecureChat() {
   return (
     <>
       <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
-      
-      {/* Animation definition - වැදගත්! */}
-      <style>{`
-        @keyframes bounce {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-5px); }
-        }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--border); borderRadius: 10px; }
-      `}</style>
 
       <div style={{ height: "100%", background: "var(--bg-main)", display: "flex", flexDirection: "column", fontFamily: "'Inter', sans-serif", overflow: "hidden", borderRadius: "16px", border: "1px solid var(--border)", transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
         
         {/* TOP NAVBAR */}
-        <nav style={{ height: 56, background: "var(--bg-glass)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", flexShrink: 0 }}>
+        <nav style={{ height: 56, background: "var(--bg-glass)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", flexShrink: 0, transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, background: "var(--bg-pill)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+              <svg width="14" height="14" fill="none" stroke="var(--accent)" strokeWidth="2" viewBox="0 0 24 24" style={{ transition: "stroke 0.3s ease" }}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
             </div>
             <span style={{ color: "var(--text-main)", fontSize: 16, fontFamily: "'EB Garamond', serif", fontWeight: 600, letterSpacing: "0.3px" }}>SecureLaw</span>
             <span style={{ color: "var(--text-muted)", fontSize: 11, marginLeft: 4, padding: "2px 8px", border: "1px solid var(--border)", borderRadius: 4, letterSpacing: "0.5px", background: "var(--bg-input)" }}>INTERNAL MESSAGING</span>
@@ -234,16 +224,16 @@ export default function SecureChat() {
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
           
           {/* LEFT SIDEBAR */}
-          <div style={{ width: 300, background: "var(--bg-glass)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", flexShrink: 0 }}>
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)" }}>
+          <div style={{ width: 300, background: "var(--bg-glass)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", flexShrink: 0, transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--border)", transition: "border-color 0.3s ease" }}>
               <div style={{ position: "relative" }}>
                 <svg width="14" height="14" fill="none" stroke="var(--text-muted)" strokeWidth="2" viewBox="0 0 24 24" style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                <input type="text" placeholder="Search contacts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px 8px 32px", color: "var(--text-main)", fontSize: 13, outline: "none" }} />
+                <input type="text" placeholder="Search contacts..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: "100%", background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 8, padding: "8px 10px 8px 32px", color: "var(--text-main)", fontSize: 13, outline: "none", transition: "background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease" }} />
               </div>
             </div>
             <div style={{ padding: "10px 16px 6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ color: "var(--text-muted)", fontSize: 11, letterSpacing: "0.8px", textTransform: "uppercase", fontWeight: 600 }}>Team Members</span>
-              <span style={{ color: "var(--accent)", fontSize: 11, fontWeight: 600 }}>{filteredContacts.filter((c) => c.online).length} online</span>
+              <span style={{ color: "var(--accent)", fontSize: 11, fontWeight: 600, transition: "color 0.3s ease" }}>{filteredContacts.filter((c) => c.online).length} online</span>
             </div>
             <div className="custom-scrollbar" style={{ flex: 1, overflowY: "auto", paddingBottom: "20px" }}>
               {filteredContacts.map((contact) => (
@@ -253,10 +243,10 @@ export default function SecureChat() {
           </div>
 
           {/* RIGHT CHAT AREA */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: 'var(--bg-main)' }}>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", backgroundColor: 'var(--bg-main)', transition: "background-color 0.3s ease" }}>
             {selectedContact ? (
               <>
-                <div style={{ height: 60, background: "var(--bg-glass)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", padding: "0 20px", flexShrink: 0 }}>
+                <div style={{ height: 60, background: "var(--bg-glass)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px", flexShrink: 0, transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                     <Avatar initials={selectedContact.initials} size={38} online={selectedContact.online} />
                     <div>
@@ -270,12 +260,7 @@ export default function SecureChat() {
                   {loading ? (
                     <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        {[0, 1, 2].map((i) => (
-                           <div key={i} style={{ 
-                             width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", 
-                             animation: `bounce 1s ${i * 0.2}s infinite` // BACKTICKS මගින් නිවැරදි කරන ලදී
-                           }} />
-                        ))}
+                        {[0, 1, 2].map((i) => (<div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--accent)", animation: `bounce 1s ${i * 0.2}s infinite`, transition: "background-color 0.3s ease" }} />))}
                       </div>
                     </div>
                   ) : messages.length === 0 ? (
@@ -296,20 +281,11 @@ export default function SecureChat() {
                   <div ref={messagesEndRef} />
                 </div>
 
-                <div style={{ padding: "12px 16px", background: "var(--bg-glass)", borderTop: "1px solid var(--border)", flexShrink: 0 }}>
-                  <div style={{ display: "flex", alignItems: "flex-end", gap: 10, background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 8px 8px 14px" }}>
-                    <textarea 
-                      ref={inputRef} 
-                      value={inputText} 
-                      onChange={(e) => { setInputText(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }} 
-                      onKeyDown={handleKeyDown} 
-                      placeholder={`Message ${selectedContact.name}...`} 
-                      rows={1} 
-                      className="custom-scrollbar" 
-                      style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--text-main)", fontSize: 14, resize: "none", lineHeight: 1.5, maxHeight: 120, overflowY: "auto", padding: 0 }} 
-                    />
+                <div style={{ padding: "12px 16px", background: "var(--bg-glass)", borderTop: "1px solid var(--border)", flexShrink: 0, transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
+                  <div style={{ display: "flex", alignItems: "flex-end", gap: 10, background: "var(--bg-input)", border: "1px solid var(--border)", borderRadius: 12, padding: "8px 8px 8px 14px", transition: "background-color 0.3s ease, border-color 0.3s ease" }}>
+                    <textarea ref={inputRef} value={inputText} onChange={(e) => { setInputText(e.target.value); e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px"; }} onKeyDown={handleKeyDown} placeholder={`Message ${selectedContact.name}...`} rows={1} className="custom-scrollbar" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--text-main)", fontSize: 14, resize: "none", lineHeight: 1.5, maxHeight: 120, overflowY: "auto", padding: 0, transition: "color 0.3s ease" }} />
                     <button onClick={handleSend} disabled={!inputText.trim() || sending} style={{ width: 36, height: 36, borderRadius: 8, background: inputText.trim() && !sending ? "var(--accent)" : "var(--bg-pill)", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: inputText.trim() && !sending ? "pointer" : "default", transition: "all 0.3s ease", flexShrink: 0 }}>
-                      <svg width="16" height="16" fill="none" stroke={inputText.trim() && !sending ? "#ffffff" : "var(--text-muted)"} strokeWidth="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
+                      <svg width="16" height="16" fill="none" stroke={inputText.trim() && !sending ? "#ffffff" : "var(--text-muted)"} strokeWidth="2" viewBox="0 0 24 24" style={{ transition: "stroke 0.3s ease" }}><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg>
                     </button>
                   </div>
                   <p style={{ color: "var(--text-muted)", fontSize: 11, marginTop: 6, marginBottom: 0, textAlign: "center" }}>Press Enter to send · Shift+Enter for new line</p>
