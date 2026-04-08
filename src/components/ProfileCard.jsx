@@ -141,16 +141,6 @@ const ProfileCard = () => {
                     <input type="text" className="form-control shadow-none rounded-3 p-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-main)' }} value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} />
                   </div>
 
-                  <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-muted)' }}>Email Address</label>
-                    <input type="email" className="form-control shadow-none rounded-3 p-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-main)' }} value={editForm.email} onChange={(e) => setEditForm({...editForm, email: e.target.value})} />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-muted)' }}>New Password <small className="fw-normal">(Leave blank to keep current)</small></label>
-                    <input type="password" placeholder="••••••••" className="form-control shadow-none rounded-3 p-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text-main)' }} value={editForm.password} onChange={(e) => setEditForm({...editForm, password: e.target.value})} />
-                  </div>
-
                   <button
                     type="submit"
                     className="btn w-100 rounded-pill py-3 d-flex align-items-center justify-content-center gap-2 fw-bold mt-2"
