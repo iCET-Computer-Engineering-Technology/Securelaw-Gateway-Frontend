@@ -79,13 +79,6 @@ const Login = () => {
             setLoading(false);
         }
 
-        // } catch (error) {
-        //     console.error("Login Error Details:", error.response?.data || error.message);
-        //     const errorMsg = error.response?.data?.message || "Invalid email or password!";
-        //     alert(errorMsg);
-        // } finally {
-        //     setLoading(false);
-        // }
 };
 
     return (
@@ -145,10 +138,7 @@ const Login = () => {
             </div>
 
             <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
-                <button onClick={() => navigate('/chat')} className="btn position-absolute d-flex align-items-center justify-content-center p-0" style={{ top: '30px', right: '30px', width: '40px', height: '40px', borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'} title="Go back">
-                    <X size={20} />
-                </button>
-
+                
                 <motion.div initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: '100%', maxWidth: '400px' }}>
                     <div className="text-center mb-5">
                         <h2 className="mb-2 fw-bold" style={{ color: 'var(--text-main)', fontSize: '2.2rem' }}>Welcome Back</h2>
