@@ -81,6 +81,7 @@ const normalizeDocumentSession = (sessionData) => {
     container?.mapping;
 
   let normalizedMapping = rawMapping;
+
   if (typeof rawMapping === "string") {
     try {
       normalizedMapping = JSON.parse(rawMapping);
