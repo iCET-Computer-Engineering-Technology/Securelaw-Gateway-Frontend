@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { X, ShieldCheck, BrainCircuit, FileText } from 'lucide-react'; 
 import { motion } from 'framer-motion'; 
 import AuditLogService from '../services/AuditLogService';
+import RegisterForm from './RegisterForm'; // ── NEW: Import the Register modal
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false); 
+    const [showRegister, setShowRegister] = useState(false); // ── NEW: State for modal
     const navigate = useNavigate(); 
 
     const getDeviceName = () => {
@@ -34,7 +36,6 @@ const Login = () => {
                 console.error("Could not fetch IP", err);
             }
 
-            // 1. ── THE LOGIN REQUEST (Perfectly matches your LoginRequestDTO!) ──
             const loginRequest = {
                 email: email,
                 password: password,
@@ -44,19 +45,17 @@ const Login = () => {
                 loginTime: new Date().toLocaleTimeString()
             };
 
-            // Post to Backend API
             const response = await axios.post('http://localhost:8080/api/auth/login', loginRequest);
             localStorage.setItem('token', response.data.token);
 
-            // 2. ── THE AUDIT LOG REQUEST (Matches your AuditLogController) ──
             try {
                 const userName = response.data.name || response.data.user?.name || email;
                 const logData = {
                     name: userName,
                     email: email,
                     type: 'LOGIN',
-                    ip: currentIp,           // The AuditLogController expects 'ip'
-                    device: getDeviceName(), // The AuditLogController expects 'device'
+                    ip: currentIp,           
+                    device: getDeviceName(), 
                     dateTime: new Date().toISOString() 
                 };
                 await AuditLogService.saveLog(logData);
@@ -64,9 +63,9 @@ const Login = () => {
                 console.error("Warning: Could not save audit log.", logError);
             }
 
-            // Route the user
             const userRole = response.data.role || response.data.user?.role || '';
-            if (userRole.toUpperCase().includes('ADMIN')) {
+            
+            if (userRole.toUpperCase().includes('ADMIN') || userRole.toUpperCase().includes('SENIOR')) {
                 navigate('/dashboard'); 
             } else {
                 navigate('/chat');      
@@ -161,17 +160,34 @@ const Login = () => {
                             <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Email Address</label>
                             <input type="email" className="form-control p-3 shadow-none login-input" placeholder="name@company.com" style={{ borderRadius: '12px' }} onChange={(e) => setEmail(e.target.value)} required />
                         </div>
-                        <div className="mb-5 text-start">
+                        <div className="mb-4 text-start">
                             <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Password</label>
                             <input type="password" className="form-control p-3 shadow-none login-input" placeholder="Enter your password" style={{ borderRadius: '12px' }} onChange={(e) => setPassword(e.target.value)} required />
                         </div>
 
-                        <motion.button whileTap={{ scale: 0.96 }} type="submit" className="btn w-100 p-3 fw-bold shadow-sm" style={{ borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', fontSize: '1.1rem' }}>
-                            LOGIN
+                        <motion.button whileTap={{ scale: 0.96 }} type="submit" className="btn w-100 p-3 fw-bold shadow-sm mb-3" style={{ borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', fontSize: '1.1rem' }}>
+                            {loading ? 'LOGGING IN...' : 'LOGIN'}
                         </motion.button>
+                        
+                        {/* ── NEW: Registration Button ── */}
+                        <div className="text-center mt-4">
+                            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
+                            <button 
+                                type="button" 
+                                className="btn btn-link p-0 fw-bold" 
+                                style={{ color: 'var(--accent)', textDecoration: 'none' }}
+                                onClick={() => setShowRegister(true)}
+                            >
+                                Register here
+                            </button>
+                        </div>
+
                     </form>
                 </motion.div>
             </div>
+
+            {/* ── NEW: Render Modal when showRegister is true ── */}
+            <RegisterForm show={showRegister} onClose={() => setShowRegister(false)} />
         </div>
     );
 };

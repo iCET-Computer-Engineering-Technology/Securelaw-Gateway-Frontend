@@ -46,8 +46,8 @@ function App() {
                   
                   <main className="flex-grow-1" style={{ marginTop: '80px' }}>
                     <Routes>
-                      {/* Default internal route */}
-                      <Route path="/" element={<Navigate to="/chat" replace />} />
+                      {/* Default Route */}
+                      <Route path="/" element={<Navigate to="/login" replace />} />
                       
                       <Route path="/collection" element={<TemplateGalleryPage />} />
                       <Route path="/workspace" element={<WorkspacePage />} />

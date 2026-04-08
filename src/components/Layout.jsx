@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-// Added MessageCircle icon for the new team chat!
-import { LayoutGrid, MessageSquare, MessageCircle, History, FileText, Users, Settings } from 'lucide-react';
+import { LayoutGrid, MessageSquare, MessageCircle, History, FileText, Users, Settings, Terminal } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Layout({ children }) {
@@ -24,19 +23,19 @@ export default function Layout({ children }) {
     }
   }, []);
 
+  // ── UPDATED ROLE PERMISSIONS ──
   const allNavItems = [
-    { icon: <LayoutGrid size={22} />, path: '/dashboard', title: 'Dashboard', seniorOnly: false },
     { icon: <MessageSquare size={22} />, path: '/chat', title: 'AI Chat', seniorOnly: false },
-    // ── NEW: Added Team Messages route ──
-    { icon: <MessageCircle size={22} />, path: '/messages', title: 'Team Messages', seniorOnly: false }, 
+    { icon: <MessageCircle size={22} />, path: '/messages', title: 'Team Messages', seniorOnly: false },
+    { icon: <Terminal size={22} />, path: '/prompt-history', title: 'Prompt History', seniorOnly: false }, // ── Junior CAN see ──
+    
+    { icon: <LayoutGrid size={22} />, path: '/dashboard', title: 'Dashboard', seniorOnly: true }, // ── Junior CANNOT see ──
     { icon: <History size={22} />, path: '/login-history', title: 'Login History', seniorOnly: true },
     { icon: <FileText size={22} />, path: '/collection', title: 'Template Collection', seniorOnly: true },
     { icon: <Users size={22} />, path: '/users', title: 'User Management', seniorOnly: true },
   ];
 
   const visibleNavItems = allNavItems.filter(item => !item.seniorOnly || isSenior);
-
-  // ── NEW: Added '/messages' to the full-screen pages list ──
   const isChatPage = location.pathname === '/chat' || location.pathname === '/messages';
 
   return (
