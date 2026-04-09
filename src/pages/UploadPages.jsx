@@ -12,11 +12,39 @@ export default function UploadPages({ onClose, onUploadSuccess }) {
   const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
   const handleFileChange = (e) => { if (e.target.files && e.target.files[0]) setFile(e.target.files[0]); };
 
-  const handleSave = async (e) => {
+ const handleSave = async (e) => {
     e.preventDefault();
-    if (!file || !formData.name || !formData.author || !formData.category) {
-      setStatus({ type: 'error', message: 'Please fill in all required fields (*).' });
-      return;
+    
+    // 1. Token එක අරගෙන Decode කරන නිවැරදි ක්‍රමය
+    const token = localStorage.getItem('token');
+    let userId = null;
+
+    if (token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            
+            const decoded = JSON.parse(jsonPayload);
+            
+            // ── වැදගත්ම දේ: මෙතන console log එක බලන්න ──
+            console.log("Full Decoded Token:", decoded); 
+
+            // Token එකේ ID එක තිබිය හැකි හැම නමකින්ම චෙක් කරනවා
+            userId = decoded.id || decoded.userId || decoded.sub; 
+        } catch (err) {
+            console.error("Error decoding token:", err);
+        }
+    }
+
+    console.log("MY USER ID IS:", userId); // දැන් මෙතන අංකයක් (1, 2 වගේ) වැටෙන්නම ඕනේ
+
+    // 2. userId එක නැත්නම් Request එක යවන්න එපා (Error එකක් පෙන්වන්න)
+    if (!userId) {
+        setStatus({ type: 'error', message: 'User ID not found. Please log in again.' });
+        return;
     }
 
     const data = new FormData();
@@ -25,36 +53,38 @@ export default function UploadPages({ onClose, onUploadSuccess }) {
     data.append('author', formData.author);
     data.append('category', formData.category);
     data.append('description', formData.description);
+    data.append('userId', userId); // ── දැන් මෙතන හරියටම ID එක වැටෙනවා ──
 
     setLoading(true);
     setStatus(null);
-
     try {
-      // ── THE CRITICAL FIX: Get the token from LocalStorage ──
-      const token = localStorage.getItem('token'); 
+        const response = await axios.post('http://localhost:8080/api/upload', data, {
+            headers: { 
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${token}` 
+            }
+        });
 
-      await axios.post('http://localhost:8080/api/upload', data, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          // ── Attach the token to bypass Spring Security ──
-          'Authorization': `Bearer ${token}` 
-        }
-      });
+        // 1. සාර්ථක මැසේජ් එක පෙන්වන්න
+        setStatus({ type: 'success', message: 'Template successfully saved!' });
+        
+        // 2. තත්පර 2කින් පස්සේ window එක close කරන්න
+        setTimeout(() => {
+            if (onUploadSuccess) onUploadSuccess(); // Grid එක refresh කරන්න
+            if (onClose) onClose(); // Popup එක වහන්න
+        }, 2000);
 
-      setStatus({ type: 'success', message: 'Template successfully saved!' });
-      
-      // Wait 1.5s to show success, then refresh the grid and close the popup
-      setTimeout(() => {
-        if (onUploadSuccess) onUploadSuccess();
-        if (onClose) onClose();
-      }, 1500);
     } catch (error) {
-      setStatus({ type: 'error', message: 'Failed to save template.' });
+        console.error("Upload Error:", error.response?.data || error.message);
+        setStatus({ 
+            type: 'error', 
+            message: error.response?.data || 'Failed to save template. Please try again.' 
+        });
+    
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+};
   return (
     /* ── POPUP OVERLAY BACKGROUND ── */
     <div 
