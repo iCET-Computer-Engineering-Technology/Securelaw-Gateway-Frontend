@@ -9,14 +9,22 @@ const TemplateSearchBar = ({ onResults }) => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearching(true);
+      
+      // ── FIXED: Get the token from localStorage ──
+      const token = localStorage.getItem("token"); 
         
       try {
         if (!keyword.trim()) {
-          const response = await axios.get("http://localhost:8080/api/templates");
+          const response = await axios.get("http://localhost:8080/api/templates", {
+            // ── FIXED: Attach token to headers ──
+            headers: { Authorization: `Bearer ${token}` } 
+          });
           onResults(response.data);
         } else {
           const response = await axios.get("http://localhost:8080/api/templates/search", {
             params: { query: keyword },
+            // ── FIXED: Attach token to headers alongside params ──
+            headers: { Authorization: `Bearer ${token}` } 
           });
           onResults(response.data);
         }

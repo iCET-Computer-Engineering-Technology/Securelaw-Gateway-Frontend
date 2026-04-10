@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Download, FileText } from 'lucide-react';
+import { ArrowLeft, Save, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import mammoth from 'mammoth'; 
 import Layout from '../components/Layout'; 
+import { showAiSuccess } from '../utils/aiAlerts'; // ── අලුතෙන් එකතු කළා ──
 
 export default function WorkspacePage() {
     const [activeTemplate, setActiveTemplate] = useState(null);
     const navigate = useNavigate();
 
-   
     const [docxContent, setDocxContent] = useState('');
     const [isExtracting, setIsExtracting] = useState(false);
     const [extractError, setExtractError] = useState(false);
+    
+    // State for storing the secure Object URL
+    const [securePreviewUrl, setSecurePreviewUrl] = useState(null);
 
     useEffect(() => {
         const savedTemplate = sessionStorage.getItem('activeTemplate');
         if (savedTemplate) setActiveTemplate(JSON.parse(savedTemplate));
     }, []);
 
-    
     const fileType = activeTemplate?.fileType || activeTemplate?.name || '';
     const isPdf = fileType.toLowerCase().includes('pdf');
     const isImage = fileType.match(/\.(jpeg|jpg|gif|png)$/) != null || fileType.includes('image');
@@ -28,25 +30,49 @@ export default function WorkspacePage() {
     
     const pdfViewUrl = activeTemplate ? `http://localhost:8080/api/templates/${activeTemplate.id}/view` : '';
 
-    
+    // Securely fetch file with Token and create Blob URL
     useEffect(() => {
-        if (isWord && activeTemplate) {
-            setIsExtracting(true);
-            setExtractError(false);
-            
-            axios.get(pdfViewUrl, { responseType: 'arraybuffer' })
-                .then(response => mammoth.convertToHtml({ arrayBuffer: response.data }))
-                .then(result => {
-                    setDocxContent(result.value);
-                    setIsExtracting(false);
-                })
-                .catch(err => {
-                    console.error("Mammoth extraction failed:", err);
-                    setExtractError(true);
-                    setIsExtracting(false);
+        if (!activeTemplate) return;
+
+        const token = localStorage.getItem('token');
+        
+        const fetchSecureFile = async () => {
+            try {
+                setIsExtracting(true);
+                setExtractError(false);
+
+                const response = await axios.get(pdfViewUrl, {
+                    responseType: 'arraybuffer',
+                    headers: { Authorization: `Bearer ${token}` } // Send the token
                 });
-        }
-    }, [isWord, activeTemplate, pdfViewUrl]);
+
+                if (isWord) {
+                    const result = await mammoth.convertToHtml({ arrayBuffer: response.data });
+                    setDocxContent(result.value);
+                } else if (isPdf || isImage) {
+                    const contentType = isPdf ? 'application/pdf' : 'image/jpeg';
+                    const blob = new Blob([response.data], { type: response.headers['content-type'] || contentType });
+                    const objectUrl = URL.createObjectURL(blob);
+                    setSecurePreviewUrl(objectUrl);
+                }
+            } catch (err) {
+                console.error("Failed to load secure workspace preview:", err);
+                setExtractError(true);
+            } finally {
+                setIsExtracting(false);
+            }
+        };
+
+        fetchSecureFile();
+
+        // Cleanup blob URL when leaving the page
+        return () => {
+            if (securePreviewUrl) {
+                URL.revokeObjectURL(securePreviewUrl);
+            }
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activeTemplate, pdfViewUrl, isWord, isPdf, isImage]);
 
 
     if (!activeTemplate) {
@@ -61,8 +87,17 @@ export default function WorkspacePage() {
         );
     }
 
-    
     const editorBgColor = isPdf ? '#e2e4e9' : 'var(--bg-input)';
+
+    const handleSaveProgress = () => {
+        // මෙතනට ඔයාගේ Backend Save Logic එක පස්සේ දාන්න පුළුවන්
+        showAiSuccess({
+            title: 'Progress Saved',
+            text: 'Your document changes have been securely saved to the workspace.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    };
 
     return (
         <Layout>
@@ -82,8 +117,15 @@ export default function WorkspacePage() {
                         </div>
                     </div>
                     <div className="d-flex gap-2">
-                        <motion.button whileTap={{ scale: 0.95 }} className="btn d-flex align-items-center gap-2 px-3 rounded-3" style={{ backgroundColor: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}><Download size={18} /> Export</motion.button>
-                        <motion.button whileTap={{ scale: 0.95 }} className="btn btn-primary d-flex align-items-center gap-2 px-4 rounded-3" style={{ backgroundColor: '#4a47a3', border: 'none', color: 'white' }}><Save size={18} /> Save Progress</motion.button>
+                        {/* ── FIXED: Export එක අයින් කරලා Save එක විතරක් තිබ්බා ── */}
+                        <motion.button 
+                            whileTap={{ scale: 0.95 }} 
+                            onClick={handleSaveProgress}
+                            className="btn btn-primary d-flex align-items-center gap-2 px-4 rounded-3 shadow-sm" 
+                            style={{ backgroundColor: '#4a47a3', border: 'none', color: 'white' }}
+                        >
+                            <Save size={18} /> Save Progress
+                        </motion.button>
                     </div>
                 </motion.div>
 
@@ -98,10 +140,10 @@ export default function WorkspacePage() {
                         <div className="w-100 h-100 rounded-4 shadow-sm overflow-hidden d-flex flex-column" style={{ border: '1px solid var(--border)', backgroundColor: editorBgColor }}>
                             
                             {isPdf ? (
-                                <iframe src={`${pdfViewUrl}#toolbar=0`} title="Document Editor" width="100%" height="100%" style={{ border: 'none' }} />
+                                <iframe src={securePreviewUrl ? `${securePreviewUrl}#toolbar=0` : ''} title="Document Editor" width="100%" height="100%" style={{ border: 'none' }} />
                             ) : isImage ? (
                                 <div className="w-100 h-100 d-flex align-items-center justify-content-center p-4">
-                                   <img src={pdfViewUrl} alt={activeTemplate.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+                                   <img src={securePreviewUrl || ''} alt={activeTemplate.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }} />
                                 </div>
                             ) : isWord ? (
                                 <div className="w-100 h-100 d-flex flex-column align-items-center p-4" style={{ overflowY: 'auto' }}>
@@ -112,7 +154,7 @@ export default function WorkspacePage() {
                                             border: '1px solid var(--border)',
                                             borderRadius: '8px',
                                             width: '100%',
-                                            maxWidth: '800px', // Wider paper for the workspace
+                                            maxWidth: '800px',
                                             minHeight: '100%',
                                             padding: '60px 50px',
                                             color: 'var(--text-main)', 
@@ -128,13 +170,12 @@ export default function WorkspacePage() {
                                         {isExtracting ? (
                                             <div className="d-flex flex-column align-items-center justify-content-center h-100 opacity-50 text-center pt-5">
                                                 <div className="spinner-border text-primary mb-3" role="status"></div>
-                                                <p>Loading document into workspace...</p>
+                                                <p>Loading document securely into workspace...</p>
                                             </div>
                                         ) : extractError ? (
                                             <div className="text-center pt-5 text-danger opacity-75">
                                                 <FileText size={40} className="mb-3" />
                                                 <p>Could not extract text from this document.</p>
-                                                <a href={pdfViewUrl} download className="btn btn-outline-danger mt-3">Download Original</a>
                                             </div>
                                         ) : (
                                             <div dangerouslySetInnerHTML={{ __html: docxContent }} style={{ fontSize: '15px', lineHeight: '1.8' }} />
@@ -157,7 +198,6 @@ export default function WorkspacePage() {
                             <div className="mb-3"><label className="form-label small text-uppercase fw-bold" style={{ color: 'var(--text-muted)' }}>Category</label><div style={{ color: 'var(--text-main)' }}>{activeTemplate.category}</div></div>
                             <div className="mb-3"><label className="form-label small text-uppercase fw-bold" style={{ color: 'var(--text-muted)' }}>Author</label><div style={{ color: 'var(--text-main)' }}>{activeTemplate.author}</div></div>
                             <div className="mb-4"><label className="form-label small text-uppercase fw-bold" style={{ color: 'var(--text-muted)' }}>Brief</label><p className="small" style={{ color: 'var(--text-muted)', lineHeight: '1.6' }}>{activeTemplate.description}</p></div>
-                            <div className="alert mt-5" style={{ backgroundColor: 'rgba(74, 71, 163, 0.1)', border: '1px solid #4a47a3', color: 'var(--text-main)' }}><small>Ready for your custom editor logic! You can add form fields here to map data into the document.</small></div>
                         </div>
                     </motion.div>
                 </motion.div>

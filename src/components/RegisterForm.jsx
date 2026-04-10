@@ -1,202 +1,409 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Form, Row, Col, Card, InputGroup } from 'react-bootstrap';
 import { Eye, EyeSlash } from 'react-bootstrap-icons';
-import { X } from 'lucide-react'; 
+import { X } from 'lucide-react';
 import axios from 'axios';
-import Swal from 'sweetalert2';
 import { motion } from 'framer-motion';
-
-// ── IMPORT AUDIT LOG SERVICE ──
 import AuditLogService from '../services/AuditLogService';
-
-const buildRegisterApiUrl = () => {
-    const baseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-    return baseUrl ? `${baseUrl.replace(/\/$/, '')}/api/v1/users/register` : 'http://localhost:8080/api/v1/users/register';
-};
+import api from '../api/axiosConfig';
+import { showAiError, showAiSuccess, showAiWarning } from '../utils/aiAlerts';
 
 const extractErrorMessage = (error) => {
-    const fallbackMessage = 'Registration failed. Please check the details.';
-    if (error.response) {
-        const { data, status } = error.response;
-        if (typeof data === 'string' && data.trim()) return `${data}<br/><small>HTTP ${status}</small>`;
-        if (data && typeof data === 'object') {
-            if (typeof data.message === 'string' && data.message.trim()) return `${data.message}<br/><small>HTTP ${status}</small>`;
-            if (typeof data.error === 'string' && data.error.trim()) return `${data.error}<br/><small>HTTP ${status}</small>`;
-        }
-        return `${fallbackMessage}<br/><small>HTTP ${status}</small>`;
+  const fallbackMessage = 'Registration failed. Please check the details.';
+
+  if (error.response) {
+    const { data, status } = error.response;
+
+    if (typeof data === 'string' && data.trim()) {
+      return `${data}<br/><small>HTTP ${status}</small>`;
     }
-    return error.message || fallbackMessage;
+
+    if (data && typeof data === 'object') {
+      if (typeof data.message === 'string' && data.message.trim()) {
+        return `${data.message}<br/><small>HTTP ${status}</small>`;
+      }
+
+      if (typeof data.error === 'string' && data.error.trim()) {
+        return `${data.error}<br/><small>HTTP ${status}</small>`;
+      }
+    }
+
+    return `${fallbackMessage}<br/><small>HTTP ${status}</small>`;
+  }
+
+  return error.message || fallbackMessage;
 };
 
 const getPasswordValidationErrors = (password) => {
-    const errors = [];
-    if (password.length < 8) errors.push('Use at least 8 characters.');
-    if (!/[A-Z]/.test(password)) errors.push('Add at least one uppercase letter.');
-    if (!/[a-z]/.test(password)) errors.push('Add at least one lowercase letter.');
-    if (!/[0-9]/.test(password)) errors.push('Add at least one number.');
-    return errors;
+  const errors = [];
+  if (password.length < 8) errors.push('Use at least 8 characters.');
+  if (!/[A-Z]/.test(password)) errors.push('Add at least one uppercase letter.');
+  if (!/[a-z]/.test(password)) errors.push('Add at least one lowercase letter.');
+  if (!/[0-9]/.test(password)) errors.push('Add at least one number.');
+  return errors;
 };
 
-// ── HELPER: Get Device Name ──
 const getDeviceName = () => {
-    const ua = window.navigator.userAgent;
-    if (ua.includes("Windows")) return "Windows PC";
-    if (ua.includes("Mac")) return "MacBook";
-    if (ua.includes("Linux")) return "Linux PC";
-    if (ua.includes("Android")) return "Android Mobile";
-    if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS Device";
-    return "Unknown Browser";
+  const ua = window.navigator.userAgent;
+  if (ua.includes('Windows')) return 'Windows PC';
+  if (ua.includes('Mac')) return 'MacBook';
+  if (ua.includes('Linux')) return 'Linux PC';
+  if (ua.includes('Android')) return 'Android Mobile';
+  if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS Device';
+  return 'Unknown Browser';
 };
 
-const RegisterForm = ({ show = true, onClose }) => {
-    const [formData, setFormData] = useState({ fullName: '', email: '', password: '', confirmPassword: '', role: 'JUNIOR_LAWYER' });
-    const [loading, setLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
-    const [passwordError, setPasswordError] = useState('');
+const RegisterForm = ({ show = true, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'JUNIOR_LAWYER',
+  });
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
-    useEffect(() => {
-        if (formData.confirmPassword !== '' && formData.password !== formData.confirmPassword) {
-            setPasswordError('Invalid Password: Passwords do not match!');
-        } else {
-            setPasswordError('');
-        }
-    }, [formData.password, formData.confirmPassword]);
+  useEffect(() => {
+    if (formData.confirmPassword !== '' && formData.password !== formData.confirmPassword) {
+      setPasswordError('Invalid Password: Passwords do not match!');
+    } else {
+      setPasswordError('');
+    }
+  }, [formData.password, formData.confirmPassword]);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      fullName: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+      role: 'JUNIOR_LAWYER',
+    });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    setPasswordError('');
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const passwordValidationErrors = getPasswordValidationErrors(formData.password);
+
+    if (passwordValidationErrors.length > 0) {
+      showAiWarning({
+        title: 'Choose a Stronger Password',
+        html: `<div style="text-align: left; font-size: 14px; line-height: 1.7;">Your password does not meet the required format.<br/><br/>${passwordValidationErrors
+          .map((message) => `&bull; ${message}`)
+          .join('<br/>')}</div>`,
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      showAiWarning({
+        title: 'Password Mismatch',
+        text: 'The passwords you entered do not match!',
+      });
+      return;
+    }
+
+    const submitData = {
+      name: formData.fullName.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      confirmPassword: formData.confirmPassword,
+      role: formData.role,
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const passwordValidationErrors = getPasswordValidationErrors(formData.password);
+    setLoading(true);
 
-        if (passwordValidationErrors.length > 0) {
-            Swal.fire({
-                icon: 'warning', title: 'Choose a Stronger Password',
-                html: `<div style="text-align: left; font-size: 14px; line-height: 1.6;">Your password does not meet the required format.<br/><br/>${passwordValidationErrors.map((message) => `&bull; ${message}`).join('<br/>')}</div>`,
-                confirmButtonColor: 'var(--accent)'
-            });
-            return;
-        }
+    try {
+      let currentIp = 'Unknown';
 
-        if (formData.password !== formData.confirmPassword) {
-            Swal.fire({ icon: 'warning', title: 'Password Mismatch', text: 'The passwords you entered do not match!', confirmButtonColor: 'var(--accent)' });
-            return;
-        }
+      try {
+        const ipRes = await axios.get('https://api.ipify.org?format=json');
+        currentIp = ipRes.data.ip;
+      } catch (err) {
+        console.error('Could not fetch IP', err);
+      }
 
-        const submitData = {
-            name: formData.fullName.trim(), email: formData.email.trim(), password: formData.password,
-            confirmPassword: formData.confirmPassword, role: formData.role
+      const response = await api.post('/users/register', submitData, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      try {
+        const logData = {
+          name: submitData.name,
+          type: 'REGISTRATION',
+          ip: currentIp,
+          device: getDeviceName(),
         };
+        await AuditLogService.saveLog(logData);
+      } catch (logError) {
+        console.error('Warning: Could not save audit log.', logError);
+      }
 
-        setLoading(true);
+      setLoading(false);
+      resetForm();
 
-        try {
-            // Get IP
-            let currentIp = "Unknown";
-            try {
-                const ipRes = await axios.get('https://api.ipify.org?format=json');
-                currentIp = ipRes.data.ip;
-            } catch (err) {
-                console.error("Could not fetch IP", err);
-            }
+      await showAiSuccess({
+        title: 'Account Ready',
+        text: response.data?.message || 'Account created successfully!',
+        timer: 2500,
+        showConfirmButton: false,
+      });
 
-            const response = await axios.post(buildRegisterApiUrl(), submitData, { headers: { 'Content-Type': 'application/json' } });
-            
-            // ── SAVE REGISTRATION LOG (Perfectly matching Spring Boot Backend!) ──
-            try {
-                const logData = {
-                    name: submitData.name,
-                    type: 'REGISTRATION',
-                    ip: currentIp, 
-                    device: getDeviceName()
-                    // ── Removed email and dateTime so Spring Boot accepts it! ──
-                };
-                await AuditLogService.saveLog(logData);
-            } catch (logError) {
-                console.error("Warning: Could not save audit log.", logError);
-            }
+      if (onSuccess) {
+        await Promise.resolve(onSuccess(response.data));
+      }
 
-            setLoading(false);
-            Swal.fire({ icon: 'success', title: 'Success!', text: response.data.message || 'Account created successfully!', timer: 2500, showConfirmButton: false });
-            setFormData({ fullName: '', email: '', password: '', confirmPassword: '', role: 'JUNIOR_LAWYER' });
-            if (onClose) onClose();
+      if (onClose) {
+        onClose();
+      }
+    } catch (error) {
+      setLoading(false);
+      showAiError({
+        title: 'Registration Error',
+        html: `<div style="text-align: left; font-size: 14px; line-height: 1.7;">${extractErrorMessage(error)}</div>`,
+      });
+    }
+  };
 
-        } catch (error) {
-            setLoading(false);
-            Swal.fire({
-                icon: 'error', title: 'Registration Error',
-                html: `<div style="text-align: left; font-size: 14px; line-height: 1.6;">${extractErrorMessage(error)}</div>`,
-                confirmButtonColor: '#dc3545'
-            });
-        }
-    };
+  if (!show) return null;
 
-    if (!show) return null;
+  const inputStyle = {
+    backgroundColor: 'var(--bg-input)',
+    color: 'var(--text-main)',
+    border: '1px solid var(--border)',
+  };
+  const optionStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' };
 
-    const inputStyle = { backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)' };
-    const optionStyle = { backgroundColor: 'var(--bg-card)', color: 'var(--text-main)' };
-
-    return (
-        <div className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center py-5" style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 9999, overflowY: 'auto' }} onClick={onClose}>
-            <motion.div onClick={(e) => e.stopPropagation()} initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: '100%', maxWidth: '650px', padding: '0 15px' }}>
-                <Card className="border-0 p-4 position-relative" style={{ width: '100%', background: 'var(--bg-glass)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid var(--border)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)' }}>
-                    {onClose && (
-                        <button type="button" onClick={onClose} className="btn position-absolute d-flex align-items-center justify-content-center p-0" style={{ top: '15px', right: '15px', width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-pill)', color: 'var(--text-main)', border: '1px solid var(--border)', transition: 'all 0.2s ease', zIndex: 10 }} onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}><X size={18} /></button>
-                    )}
-                    <Card.Body>
-                        <div className="text-center mb-4">
-                            <h2 className="fw-bold" style={{ color: 'var(--text-main)', letterSpacing: '-0.5px' }}>Create Account</h2>
-                            <p className="text-muted small">SecureLaw Management System</p>
-                        </div>
-                        <Form onSubmit={handleSubmit}>
-                            <Form.Group className="mb-4">
-                                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Full Name</Form.Label>
-                                <Form.Control type="text" name="fullName" className="shadow-none" style={inputStyle} value={formData.fullName} placeholder="Enter your full name" onChange={handleChange} required disabled={loading} />
-                            </Form.Group>
-                            <Form.Group className="mb-4">
-                                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Work Email Address</Form.Label>
-                                <Form.Control type="email" name="email" className="shadow-none" style={inputStyle} value={formData.email} placeholder="name@gmail.com" onChange={handleChange} required disabled={loading} />
-                            </Form.Group>
-                            <Row className="mb-4">
-                                <Col md={6} className="mb-4 mb-md-0">
-                                    <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Password</Form.Label>
-                                    <InputGroup>
-                                        <Form.Control type={showPassword ? "text" : "password"} name="password" className="shadow-none" style={{...inputStyle, borderRight: 'none', borderRadius: '12px 0 0 12px'}} value={formData.password} placeholder="••••••••" onChange={handleChange} required disabled={loading} />
-                                        <InputGroup.Text className="shadow-none" style={{ cursor: 'pointer', borderRadius: '0 12px 12px 0', background: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)', borderLeft: 'none' }} onClick={() => setShowPassword(!showPassword)}>
-                                            {showPassword ? <EyeSlash size={18} style={{ color: 'var(--text-main)' }} /> : <Eye size={18} style={{ color: 'var(--text-main)' }} />}
-                                        </InputGroup.Text>
-                                    </InputGroup>
-                                </Col>
-                                <Col md={6}>
-                                    <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Confirm Password</Form.Label>
-                                    <InputGroup>
-                                        <Form.Control type={showConfirmPassword ? "text" : "password"} name="confirmPassword" className={`shadow-none ${passwordError ? 'border-danger' : ''}`} style={{...inputStyle, borderRight: 'none', borderRadius: '12px 0 0 12px'}} value={formData.confirmPassword} placeholder="••••••••" onChange={handleChange} required disabled={loading} />
-                                        <InputGroup.Text className={`shadow-none ${passwordError ? 'border-danger' : ''}`} style={{ cursor: 'pointer', borderRadius: '0 12px 12px 0', background: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)', borderLeft: 'none' }} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                            {showConfirmPassword ? <EyeSlash size={18} style={{ color: 'var(--text-main)' }} /> : <Eye size={18} style={{ color: 'var(--text-main)' }} />}
-                                        </InputGroup.Text>
-                                    </InputGroup>
-                                    {passwordError && <div className="text-danger small mt-1 fw-bold ms-1" style={{ fontSize: '11px' }}>{passwordError}</div>}
-                                </Col>
-                            </Row>
-                            <Form.Group className="mb-5">
-                                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>Professional Role</Form.Label>
-                                <Form.Select name="role" className="shadow-none" style={inputStyle} value={formData.role} onChange={handleChange} required disabled={loading}>
-                                    <option value="JUNIOR_LAWYER" style={optionStyle}>Junior Lawyer</option>
-                                    <option value="SENIOR_LAWYER" style={optionStyle}>Senior Lawyer</option>
-                                </Form.Select>
-                            </Form.Group>
-                            <motion.button whileTap={{ scale: 0.95 }} type="submit" disabled={loading} className="w-100 btn px-4" style={{ backgroundColor: 'var(--accent)', color: '#fff', border: '1px solid var(--border)', borderRadius: '12px', fontWeight: '600', padding: '12px', transition: 'all 0.2s' }}>
-                                {loading ? <><span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...</> : 'Register Now'}
-                            </motion.button>
-                        </Form>
-                    </Card.Body>
-                </Card>
-            </motion.div>
-        </div>
-    );
+  return (
+    <div
+      className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center py-5"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 9999,
+        overflowY: 'auto',
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        onClick={(e) => e.stopPropagation()}
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        style={{ width: '100%', maxWidth: '650px', padding: '0 15px' }}
+      >
+        <Card
+          className="border-0 p-4 position-relative"
+          style={{
+            width: '100%',
+            background: 'var(--bg-glass)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid var(--border)',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+          }}
+        >
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn position-absolute d-flex align-items-center justify-content-center p-0"
+              style={{
+                top: '15px',
+                right: '15px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                background: 'var(--bg-pill)',
+                color: 'var(--text-main)',
+                border: '1px solid var(--border)',
+                transition: 'all 0.2s ease',
+                zIndex: 10,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
+              <X size={18} />
+            </button>
+          )}
+          <Card.Body>
+            <div className="text-center mb-4">
+              <h2 className="fw-bold" style={{ color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
+                Create Account
+              </h2>
+              <p className="text-muted small">SecureLaw Management System</p>
+            </div>
+            <Form onSubmit={handleSubmit}>
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>
+                  Full Name
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="fullName"
+                  className="shadow-none"
+                  style={inputStyle}
+                  value={formData.fullName}
+                  placeholder="Enter your full name"
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+              </Form.Group>
+              <Form.Group className="mb-4">
+                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>
+                  Work Email Address
+                </Form.Label>
+                <Form.Control
+                  type="email"
+                  name="email"
+                  className="shadow-none"
+                  style={inputStyle}
+                  value={formData.email}
+                  placeholder="name@gmail.com"
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+              </Form.Group>
+              <Row className="mb-4">
+                <Col md={6} className="mb-4 mb-md-0">
+                  <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>
+                    Password
+                  </Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type={showPassword ? 'text' : 'password'}
+                      name="password"
+                      className="shadow-none"
+                      style={{ ...inputStyle, borderRight: 'none', borderRadius: '12px 0 0 12px' }}
+                      value={formData.password}
+                      placeholder="........"
+                      onChange={handleChange}
+                      required
+                      disabled={loading}
+                    />
+                    <InputGroup.Text
+                      className="shadow-none"
+                      style={{
+                        cursor: 'pointer',
+                        borderRadius: '0 12px 12px 0',
+                        background: 'var(--bg-input)',
+                        color: 'var(--text-main)',
+                        border: '1px solid var(--border)',
+                        borderLeft: 'none',
+                      }}
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? <EyeSlash size={18} style={{ color: 'var(--text-main)' }} /> : <Eye size={18} style={{ color: 'var(--text-main)' }} />}
+                    </InputGroup.Text>
+                  </InputGroup>
+                </Col>
+                <Col md={6}>
+                  <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>
+                    Confirm Password
+                  </Form.Label>
+                  <InputGroup>
+                    <Form.Control
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      className={`shadow-none ${passwordError ? 'border-danger' : ''}`}
+                      style={{ ...inputStyle, borderRight: 'none', borderRadius: '12px 0 0 12px' }}
+                      value={formData.confirmPassword}
+                      placeholder="........"
+                      onChange={handleChange}
+                      required
+                      disabled={loading}
+                    />
+                    <InputGroup.Text
+                      className={`shadow-none ${passwordError ? 'border-danger' : ''}`}
+                      style={{
+                        cursor: 'pointer',
+                        borderRadius: '0 12px 12px 0',
+                        background: 'var(--bg-input)',
+                        color: 'var(--text-main)',
+                        border: '1px solid var(--border)',
+                        borderLeft: 'none',
+                      }}
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    >
+                      {showConfirmPassword ? <EyeSlash size={18} style={{ color: 'var(--text-main)' }} /> : <Eye size={18} style={{ color: 'var(--text-main)' }} />}
+                    </InputGroup.Text>
+                  </InputGroup>
+                  {passwordError && (
+                    <div className="text-danger small mt-1 fw-bold ms-1" style={{ fontSize: '11px' }}>
+                      {passwordError}
+                    </div>
+                  )}
+                </Col>
+              </Row>
+              <Form.Group className="mb-5">
+                <Form.Label className="small fw-bold text-uppercase ms-1" style={{ color: 'var(--text-muted)' }}>
+                  Professional Role
+                </Form.Label>
+                <Form.Select
+                  name="role"
+                  className="shadow-none"
+                  style={inputStyle}
+                  value={formData.role}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                >
+                  <option value="JUNIOR_LAWYER" style={optionStyle}>
+                    Junior Lawyer
+                  </option>
+                  <option value="SENIOR_LAWYER" style={optionStyle}>
+                    Senior Lawyer
+                  </option>
+                </Form.Select>
+              </Form.Group>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                type="submit"
+                disabled={loading}
+                className="w-100 btn px-4"
+                style={{
+                  backgroundColor: 'var(--accent)',
+                  color: '#fff',
+                  border: '1px solid var(--border)',
+                  borderRadius: '12px',
+                  fontWeight: '600',
+                  padding: '12px',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {loading ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Processing...
+                  </>
+                ) : (
+                  'Register Now'
+                )}
+              </motion.button>
+            </Form>
+          </Card.Body>
+        </Card>
+      </motion.div>
+    </div>
+  );
 };
 
 export default RegisterForm;
