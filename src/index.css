@@ -155,3 +155,188 @@ main.flex-grow-1 {
   to { opacity: 1; transform: translateY(0); }
 }
 .animate-in { animation: fadeIn 0.5s ease-out; }
+
+/* =========================================================
+   7. AI Alert Cards
+   ========================================================= */
+.ai-alert-container {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.ai-alert-popup {
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  border: 1px solid color-mix(in srgb, var(--ai-alert-accent) 42%, rgba(255, 255, 255, 0.12)) !important;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--ai-alert-accent) 18%, transparent) 0%, transparent 42%),
+    linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+    var(--bg-glass) !important;
+  box-shadow:
+    0 30px 80px rgba(2, 6, 23, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.ai-alert-popup::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ai-alert-accent) 16%, transparent), transparent 45%);
+  opacity: 0.95;
+}
+
+.ai-alert-icon {
+  width: 74px !important;
+  height: 74px !important;
+  margin: 0 auto 1rem !important;
+  border: none !important;
+  border-radius: 22px !important;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ai-alert-accent) 84%, #ffffff 16%), var(--ai-alert-accent)) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 22px 45px color-mix(in srgb, var(--ai-alert-accent) 30%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+.ai-alert-icon__glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ai-alert-title {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 0.45rem !important;
+  color: var(--text-main) !important;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+}
+
+.ai-alert-body {
+  position: relative;
+  z-index: 1;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--text-muted) !important;
+}
+
+.ai-alert-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  text-align: left;
+}
+
+.ai-alert-chip {
+  align-self: flex-start;
+  padding: 0.45rem 0.82rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--ai-alert-accent) 32%, transparent);
+  background: color-mix(in srgb, var(--ai-alert-accent) 14%, var(--bg-pill));
+  color: var(--text-main);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ai-alert-message {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.ai-alert-message p {
+  margin: 0;
+}
+
+.ai-alert-message small {
+  display: block;
+  margin-top: 0.65rem;
+  color: color-mix(in srgb, var(--text-muted) 88%, #ffffff 12%);
+  font-size: 0.78rem;
+}
+
+.ai-alert-actions {
+  position: relative;
+  z-index: 1;
+  gap: 0.75rem !important;
+  margin-top: 1.35rem !important;
+}
+
+.ai-alert-confirm,
+.ai-alert-cancel {
+  margin: 0 !important;
+  border-radius: 999px !important;
+  padding: 0.88rem 1.2rem !important;
+  font-weight: 700 !important;
+  min-width: 132px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.ai-alert-confirm {
+  border: none !important;
+  background: linear-gradient(135deg, var(--ai-alert-accent), color-mix(in srgb, var(--ai-alert-accent) 76%, #ffffff 24%)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--ai-alert-accent) 24%, transparent);
+}
+
+.ai-alert-cancel {
+  border: 1px solid var(--border) !important;
+  background: var(--bg-pill) !important;
+  color: var(--text-main) !important;
+}
+
+.ai-alert-confirm:hover,
+.ai-alert-cancel:hover {
+  transform: translateY(-1px);
+}
+
+.ai-alert-progress {
+  background: linear-gradient(90deg, var(--ai-alert-accent), color-mix(in srgb, var(--ai-alert-accent) 65%, #ffffff 35%)) !important;
+}
+
+/* =========================================================
+   8. Internal Panel Scrolls
+   ========================================================= */
+.app-page-scroll {
+  height: calc(100vh - 120px);
+  max-height: calc(100vh - 120px);
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-page-scroll--column {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-page-scroll .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.app-panel-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.app-panel-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-glass) !important;
+  box-shadow: inset 0 -1px 0 var(--border);
+}
