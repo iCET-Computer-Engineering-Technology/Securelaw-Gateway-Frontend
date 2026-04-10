@@ -11,6 +11,9 @@ export default function TemplateModel({ template, onClose, onDelete }) {
   const [docxContent, setDocxContent] = useState('');
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractError, setExtractError] = useState(false);
+  
+  // ── NEW: State for storing the secure Object URL ──
+  const [securePreviewUrl, setSecurePreviewUrl] = useState(null);
 
   const fileType = template?.fileType || template?.name || '';
   const isPdf = fileType.toLowerCase().includes('pdf');
@@ -20,15 +23,50 @@ export default function TemplateModel({ template, onClose, onDelete }) {
   const pdfViewUrl = template ? `http://localhost:8080/api/templates/${template.id}/view` : '';
 
   useEffect(() => {
-    if (isWord && template) {
-      setIsExtracting(true);
-      setExtractError(false);
-      axios.get(pdfViewUrl, { responseType: 'arraybuffer' })
-        .then(response => mammoth.convertToHtml({ arrayBuffer: response.data }))
-        .then(result => { setDocxContent(result.value); setIsExtracting(false); })
-        .catch(err => { console.error(err); setExtractError(true); setIsExtracting(false); });
-    }
-  }, [isWord, template, pdfViewUrl]);
+    if (!template) return;
+
+    const token = localStorage.getItem('token');
+    
+    // ── FIXED: Fetch file securely using Axios and create a Blob URL ──
+    const fetchSecureFile = async () => {
+      try {
+        setIsExtracting(true);
+        setExtractError(false);
+
+        const response = await axios.get(pdfViewUrl, {
+          responseType: 'arraybuffer', // Need raw data for both Mammoth and Blob
+          headers: { Authorization: `Bearer ${token}` } // Send the token!
+        });
+
+        if (isWord) {
+          // If it's a Word Doc, use Mammoth to convert it
+          const result = await mammoth.convertToHtml({ arrayBuffer: response.data });
+          setDocxContent(result.value);
+        } else if (isPdf || isImage) {
+          // If it's a PDF or Image, create a local blob URL for the iframe/img tag
+          const contentType = isPdf ? 'application/pdf' : 'image/jpeg'; // fallback image type
+          const blob = new Blob([response.data], { type: response.headers['content-type'] || contentType });
+          const objectUrl = URL.createObjectURL(blob);
+          setSecurePreviewUrl(objectUrl);
+        }
+      } catch (err) {
+        console.error("Failed to load secure preview:", err);
+        setExtractError(true);
+      } finally {
+        setIsExtracting(false);
+      }
+    };
+
+    fetchSecureFile();
+
+    // Cleanup: revoke the object URL to prevent memory leaks when the modal closes
+    return () => {
+      if (securePreviewUrl) {
+        URL.revokeObjectURL(securePreviewUrl);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [template, pdfViewUrl, isWord, isPdf, isImage]);
 
   const handleUseTemplate = () => {
     sessionStorage.setItem('activeTemplate', JSON.stringify(template));
@@ -61,11 +99,24 @@ export default function TemplateModel({ template, onClose, onDelete }) {
 
         {/* LEFT SIDE: PREVIEW PANE */}
         <div className="h-100 position-relative" style={{ flex: '1 1 55%', backgroundColor: previewBgColor, borderRight: '1px solid var(--border)' }}>
-          {isPdf ? (
-            <iframe src={`${pdfViewUrl}#toolbar=0&navpanes=0`} title={template.name} width="100%" height="100%" style={{ border: 'none', backgroundColor: '#ffffff' }} />
+          
+          {isExtracting && !isWord ? (
+              <div className="d-flex flex-column align-items-center justify-content-center h-100 opacity-50 text-center">
+                  <div className="spinner-border text-primary mb-3"></div>
+                  <p>Loading Preview securely...</p>
+              </div>
+          ) : extractError ? (
+              <div className="d-flex flex-column align-items-center justify-content-center h-100 text-danger opacity-75">
+                  <FileText size={40} className="mb-3" />
+                  <p>Could not load preview. File may be unavailable.</p>
+              </div>
+          ) : isPdf ? (
+            // ── Use the generated blob URL instead of the direct backend API ──
+            <iframe src={securePreviewUrl ? `${securePreviewUrl}#toolbar=0&navpanes=0` : ''} title={template.name} width="100%" height="100%" style={{ border: 'none', backgroundColor: '#ffffff' }} />
           ) : isImage ? (
             <div className="w-100 h-100 d-flex align-items-center justify-content-center p-3">
-               <img src={pdfViewUrl} alt={template.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+               {/* ── Use the generated blob URL for the image ── */}
+               <img src={securePreviewUrl || ''} alt={template.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
             </div>
           ) : isWord ? (
             <div className="w-100 h-100 d-flex flex-column align-items-center p-4" style={{ overflowY: 'auto' }}>
@@ -73,9 +124,7 @@ export default function TemplateModel({ template, onClose, onDelete }) {
                 <style>{`.docx-paper * { color: var(--text-main) !important; }`}</style>
                 <a href={pdfViewUrl} download className="btn btn-sm position-absolute top-0 end-0 m-3 d-flex align-items-center shadow-sm" style={{ backgroundColor: 'var(--accent)', color: 'white', borderRadius: '8px' }}><Download size={14} className="me-1" /> Original</a>
                 {isExtracting ? (
-                    <div className="d-flex flex-column align-items-center justify-content-center h-100 opacity-50 text-center pt-5"><div className="spinner-border text-primary mb-3"></div><p>Extracting text...</p></div>
-                ) : extractError ? (
-                    <div className="text-center pt-5 text-danger opacity-75"><FileText size={40} className="mb-3" /><p>Could not extract text.</p></div>
+                    <div className="d-flex flex-column align-items-center justify-content-center h-100 opacity-50 text-center pt-5"><div className="spinner-border text-primary mb-3"></div><p>Extracting text securely...</p></div>
                 ) : (
                     <div dangerouslySetInnerHTML={{ __html: docxContent }} style={{ fontSize: '14.5px', lineHeight: '1.7', marginTop: '20px' }} />
                 )}
@@ -107,7 +156,6 @@ export default function TemplateModel({ template, onClose, onDelete }) {
             </div>
           </div>
 
-          {/* ── CRITICAL FIX: Removed hardcoded white styles and used dynamic CSS variables ── */}
           <div className="mt-auto d-flex gap-3">
             <motion.button
               whileTap={{ scale: 0.95 }}

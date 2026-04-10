@@ -1,39 +1,40 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; 
-import { X, ShieldCheck, BrainCircuit, FileText } from 'lucide-react'; 
-import { motion } from 'framer-motion'; 
+import { useNavigate } from 'react-router-dom';
+import { X, ShieldCheck, BrainCircuit, FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 import AuditLogService from '../services/AuditLogService';
-import RegisterForm from './RegisterForm'; // ── NEW: Import the Register modal
+import RegisterForm from './RegisterForm';
+import { showAiError } from '../utils/aiAlerts';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false); 
-    const [showRegister, setShowRegister] = useState(false); // ── NEW: State for modal
-    const navigate = useNavigate(); 
+    const [loading, setLoading] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
+    const navigate = useNavigate();
 
     const getDeviceName = () => {
         const ua = window.navigator.userAgent;
-        if (ua.includes("Windows")) return "Windows PC";
-        if (ua.includes("Mac")) return "MacBook";
-        if (ua.includes("Linux")) return "Linux PC";
-        if (ua.includes("Android")) return "Android Mobile";
-        if (ua.includes("iPhone") || ua.includes("iPad")) return "iOS Device";
-        return "Unknown Browser";
+        if (ua.includes('Windows')) return 'Windows PC';
+        if (ua.includes('Mac')) return 'MacBook';
+        if (ua.includes('Linux')) return 'Linux PC';
+        if (ua.includes('Android')) return 'Android Mobile';
+        if (ua.includes('iPhone') || ua.includes('iPad')) return 'iOS Device';
+        return 'Unknown Browser';
     };
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        
+
         try {
-            let currentIp = "Unknown";
+            let currentIp = 'Unknown';
             try {
                 const ipRes = await axios.get('https://api.ipify.org?format=json');
                 currentIp = ipRes.data.ip;
             } catch (err) {
-                console.error("Could not fetch IP", err);
+                console.error('Could not fetch IP', err);
             }
 
             const loginRequest = {
@@ -54,32 +55,35 @@ const Login = () => {
                     name: userName,
                     email: email,
                     type: 'LOGIN',
-                    ip: currentIp,           
-                    device: getDeviceName(), 
-                    dateTime: new Date().toISOString() 
+                    ip: currentIp,
+                    device: getDeviceName(),
+                    dateTime: new Date().toISOString()
                 };
                 await AuditLogService.saveLog(logData);
             } catch (logError) {
-                console.error("Warning: Could not save audit log.", logError);
+                console.error('Warning: Could not save audit log.', logError);
             }
 
             const userRole = response.data.role || response.data.user?.role || '';
-            
+
             if (userRole.toUpperCase().includes('ADMIN') || userRole.toUpperCase().includes('SENIOR')) {
-                navigate('/dashboard'); 
+                navigate('/dashboard');
             } else {
-                navigate('/chat');      
+                navigate('/chat');
             }
 
         } catch (error) {
-            console.error("Login Error:", error);
-            const errorMsg = error.response?.data?.message || "Invalid email or password!";
-            alert(errorMsg);
+            console.error('Login Error:', error);
+            const errorMsg = error.response?.data?.message || 'Invalid email or password!';
+            showAiError({
+                title: 'Login Failed',
+                text: errorMsg,
+            });
         } finally {
             setLoading(false);
         }
 
-};
+    };
 
     return (
         <div className="d-flex w-100 vh-100" style={{ backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}>
@@ -138,13 +142,13 @@ const Login = () => {
             </div>
 
             <div className="d-flex flex-column justify-content-center align-items-center p-4 position-relative" style={{ width: '100%', maxWidth: '100%', flex: '1 1 auto', zIndex: 2 }}>
-                
-                <motion.div initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", damping: 25, stiffness: 300 }} style={{ width: '100%', maxWidth: '400px' }}>
+
+                <motion.div initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} style={{ width: '100%', maxWidth: '400px' }}>
                     <div className="text-center mb-5">
                         <h2 className="mb-2 fw-bold" style={{ color: 'var(--text-main)', fontSize: '2.2rem' }}>Welcome Back</h2>
                         <p className="fw-medium" style={{ color: 'var(--text-muted)', fontSize: '1.1rem' }}>Sign in to your SecureLaw account</p>
                     </div>
-                    
+
                     <form onSubmit={handleLogin}>
                         <div className="mb-4 text-start">
                             <label className="form-label fw-bold small mb-2" style={{ color: 'var(--text-main)' }}>Email Address</label>
@@ -158,13 +162,12 @@ const Login = () => {
                         <motion.button whileTap={{ scale: 0.96 }} type="submit" className="btn w-100 p-3 fw-bold shadow-sm mb-3" style={{ borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', fontSize: '1.1rem' }}>
                             {loading ? 'LOGGING IN...' : 'LOGIN'}
                         </motion.button>
-                        
-                        {/* ── NEW: Registration Button ── */}
+
                         <div className="text-center mt-4">
                             <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
-                            <button 
-                                type="button" 
-                                className="btn btn-link p-0 fw-bold" 
+                            <button
+                                type="button"
+                                className="btn btn-link p-0 fw-bold"
                                 style={{ color: 'var(--accent)', textDecoration: 'none' }}
                                 onClick={() => setShowRegister(true)}
                             >
@@ -176,7 +179,6 @@ const Login = () => {
                 </motion.div>
             </div>
 
-            {/* ── NEW: Render Modal when showRegister is true ── */}
             <RegisterForm show={showRegister} onClose={() => setShowRegister(false)} />
         </div>
     );

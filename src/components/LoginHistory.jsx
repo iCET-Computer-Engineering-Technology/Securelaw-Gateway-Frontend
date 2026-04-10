@@ -22,17 +22,15 @@ const LoginHistory = () => {
     try {
       setLoading(true);
       const allLogs = await AuditLogService.getAllLogs();
-      
+
       if (!Array.isArray(allLogs)) return;
 
-      // ── THE FIX: Fetch both LOGIN and LOGOUT events! ──
-      const loginLogs = allLogs.filter(log => 
-        log.type?.toUpperCase() === 'LOGIN' || 
-        log.type?.toUpperCase() === 'LOGOUT' || 
+      const loginLogs = allLogs.filter(log =>
+        log.type?.toUpperCase() === 'LOGIN' ||
+        log.type?.toUpperCase() === 'LOGOUT' ||
         log.type?.toUpperCase() === 'ADMIN'
       );
 
-      // Sort by newest first so the latest actions are at the top
       loginLogs.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime));
 
       setLogs(loginLogs);
@@ -81,8 +79,10 @@ const LoginHistory = () => {
 
   if (loading) {
     return (
-      <div className="text-center mt-5">
-        <div className="spinner-border" style={{ color: 'var(--accent)' }} role="status"></div>
+      <div className="app-page-scroll d-flex align-items-center justify-content-center">
+        <div className="text-center mt-5">
+          <div className="spinner-border" style={{ color: 'var(--accent)' }} role="status"></div>
+        </div>
       </div>
     );
   }
@@ -90,16 +90,16 @@ const LoginHistory = () => {
   const inputStyle = { backgroundColor: 'var(--bg-input)', color: 'var(--text-main)', border: '1px solid var(--border)' };
 
   return (
-    <div className="row">
-      <div className="col-12 mb-4">
-        <h2 className="mb-4 fw-bold" style={{ color: 'var(--text-main)' }}>
-          <i className="bi bi-box-arrow-in-right me-2" style={{ color: 'var(--accent)' }}></i>
-          Login & Logout History
-        </h2>
-      </div>
+    <div className="app-page-scroll pe-2">
+      <div className="d-flex flex-column h-100 gap-4">
+        <div className="flex-shrink-0">
+          <h2 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>
+            <i className="bi bi-box-arrow-in-right me-2" style={{ color: 'var(--accent)' }}></i>
+            Login & Logout History
+          </h2>
+        </div>
 
-      <div className="col-12 mb-4">
-        <div className="glass-panel p-4">
+        <div className="glass-panel p-4 flex-shrink-0">
           <div className="row g-3">
             <div className="col-md-6">
               <div className="input-group">
@@ -137,16 +137,14 @@ const LoginHistory = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="col-12">
-        <div className="glass-panel">
-          <div className="px-4 py-3 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border)' }}>
+        <div className="glass-panel d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
+          <div className="px-4 py-3 d-flex justify-content-between align-items-center flex-shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
             <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-main)' }}>Session Events</h5>
             <span className="badge" style={{ backgroundColor: 'var(--accent)' }}>Total: {filteredLogs.length}</span>
           </div>
-          <div className="p-3">
-            <div className="table-responsive">
+          <div className="p-3 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
+            <div className="table-responsive app-panel-scroll">
               <table className="table table-hover mb-0">
                 <thead>
                   <tr>
@@ -162,29 +160,29 @@ const LoginHistory = () => {
                   {currentItems.length > 0 ? (
                     currentItems.map((log, index) => {
                       const isLogout = log.type?.toUpperCase() === 'LOGOUT';
-                      
+
                       return (
-                      <tr key={log.id || index}>
-                        <td style={{ color: 'var(--text-muted)' }}>{indexOfFirstItem + index + 1}</td>
-                        <td className="fw-medium">{log.name || 'Unknown'}</td>
-                        <td style={{ color: 'var(--text-muted)' }}>
-                          <i className="bi bi-calendar me-1"></i>
-                          {log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}
-                        </td>
-                        <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || log.ip || '-'}</code></td>
-                        <td>
-                          {/* ── DYNAMIC BADGE COLOR FOR LOGIN VS LOGOUT ── */}
-                          <span className={`badge ${isLogout ? 'bg-secondary' : 'bg-success'} bg-opacity-75`}>
-                            <i className={`bi ${isLogout ? 'bi-box-arrow-left' : 'bi-shield-check'} me-1`}></i> 
-                            {log.type || 'UNKNOWN'}
-                          </span>
-                        </td>
-                        <td style={{ color: 'var(--text-muted)' }}>
-                          <i className={`bi ${getDeviceIcon(log.device)} me-1`}></i>
-                          {log.device || 'Unknown'}
-                        </td>
-                      </tr>
-                    )})
+                        <tr key={log.id || index}>
+                          <td style={{ color: 'var(--text-muted)' }}>{indexOfFirstItem + index + 1}</td>
+                          <td className="fw-medium">{log.name || 'Unknown'}</td>
+                          <td style={{ color: 'var(--text-muted)' }}>
+                            <i className="bi bi-calendar me-1"></i>
+                            {log.dateTime ? new Date(log.dateTime).toLocaleString() : 'N/A'}
+                          </td>
+                          <td><code style={{ color: 'var(--accent)' }}>{log.ipAddress || log.ip || '-'}</code></td>
+                          <td>
+                            <span className={`badge ${isLogout ? 'bg-secondary' : 'bg-success'} bg-opacity-75`}>
+                              <i className={`bi ${isLogout ? 'bi-box-arrow-left' : 'bi-shield-check'} me-1`}></i>
+                              {log.type || 'UNKNOWN'}
+                            </span>
+                          </td>
+                          <td style={{ color: 'var(--text-muted)' }}>
+                            <i className={`bi ${getDeviceIcon(log.device)} me-1`}></i>
+                            {log.device || 'Unknown'}
+                          </td>
+                        </tr>
+                      );
+                    })
                   ) : (
                     <tr>
                       <td colSpan="6" className="text-center py-5">
@@ -198,8 +196,8 @@ const LoginHistory = () => {
             </div>
 
             {totalPages > 1 && (
-              <nav className="mt-4">
-                <ul className="pagination justify-content-center">
+              <nav className="mt-4 flex-shrink-0">
+                <ul className="pagination justify-content-center mb-0">
                   <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
                     <button className="page-link" style={inputStyle} onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}>Previous</button>
                   </li>

@@ -23,6 +23,39 @@ import RegisterForm from './components/RegisterForm';
 import SecureChat from './pages/Securechat'; 
 import ProfileCard from './components/ProfileCard';
 
+// ── අලුතෙන් එකතු කරපු Route Guard එක ──
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const token = localStorage.getItem('token');
+  
+  // 1. Token එකක් නැත්තම් (ලොග් වෙලා නැත්තම්) කෙලින්ම Login එකට යවනවා
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  try {
+    // 2. Token එක ඇතුලේ තියෙන Role එක කියවනවා
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userRole = payload.role || payload.authorities || '';
+
+    // 3. මේ Page එකට යන්න විශේෂ Role එකක් ඕනෙද කියලා බලනවා
+    if (allowedRoles && allowedRoles.length > 0) {
+      // User ගේ Role එක allowedRoles ලිස්ට් එකේ නැත්තම්...
+      const hasPermission = allowedRoles.some(role => userRole.toUpperCase().includes(role));
+      
+      if (!hasPermission) {
+        // අවසර නැත්තම්, එයාව ආපහු Chat එකටම විසි කරනවා!
+        return <Navigate to="/chat" replace />;
+      }
+    }
+  } catch (e) {
+    // Token එක අවුල් නම් Login එකට යවනවා
+    return <Navigate to="/login" replace />;
+  }
+
+  // ඔක්කොම හරි නම්, එයාට යන්න හදපු Page එකට යන්න දෙනවා
+  return children;
+};
+
 function App() {
   const [showModal, setShowModal] = useState(false);
 
@@ -49,21 +82,64 @@ function App() {
                       {/* Default Route */}
                       <Route path="/" element={<Navigate to="/login" replace />} />
                       
-                      <Route path="/collection" element={<TemplateGalleryPage />} />
-                      <Route path="/workspace" element={<WorkspacePage />} />
-                      <Route path="/upload" element={<UploadPage />} />
-                      
-                      <Route path="/users" element={<UserManagement />} />
-                      <Route path="/chat" element={<ChatBox />} />
-                      
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/login-history" element={<LoginHistory />} />
-                      <Route path="/prompt-history" element={<PromptHistory />} />
-                      <Route path="/registration-history" element={<RegistrationHistory />} />
-                      <Route path="/messages" element={<SecureChat />} />
+                      {/* ── හැමෝටම (Junior & Senior) යන්න පුළුවන් Pages ── */}
+                      <Route path="/collection" element={
+                        <ProtectedRoute>
+                          <TemplateGalleryPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/workspace" element={
+                        <ProtectedRoute>
+                          <WorkspacePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/upload" element={
+                        <ProtectedRoute>
+                          <UploadPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chat" element={
+                        <ProtectedRoute>
+                          <ChatBox />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/messages" element={
+                        <ProtectedRoute>
+                          <SecureChat />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/profile" element={
+                        <ProtectedRoute>
+                          <ProfileCard />
+                        </ProtectedRoute>
+                      } />
 
-                      {/* ── NEW ROUTE: Added from dev branch ── */}
-                      <Route path="/profile" element={<ProfileCard />} />
+                      {/* ── SENIOR සහ ADMIN ලාට විතරක් යන්න පුළුවන් Pages ── */}
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/login-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <LoginHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/prompt-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <PromptHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/registration-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <RegistrationHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/users" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <UserManagement />
+                        </ProtectedRoute>
+                      } />
 
                       {/* Fallback */}
                       <Route path="*" element={<Navigate to="/chat" replace />} />
