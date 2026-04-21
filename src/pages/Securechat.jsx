@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
 
-// =====================================================================
 // CONFIG
-// =====================================================================
 const BASE_URL = "http://localhost:8080";
 
-// Axios instance - token automatic ගෙ headers ගෙ add වෙනවා
+// Axios instance - token automatic 
 const api = axios.create({ baseURL: BASE_URL });
 
 api.interceptors.request.use((config) => {
@@ -15,9 +13,8 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// =====================================================================
+
 // HELPERS
-// =====================================================================
 const getInitials = (name = "") =>
   name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
@@ -39,11 +36,10 @@ const formatDate = (timestamp) => {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 };
 
-// =====================================================================
+
 // API CALLS (axios)
-// =====================================================================
 const ChatAPI = {
-  // Controller path එකට match
+  // Controller path - /api/v1/users
 getAllUsers: async () => {
     const { data } = await api.get("/api/v1/users/all");
     return data;
@@ -54,7 +50,7 @@ getCurrentUser: async () => {
     return data;
 },
 
-  // Message send කරන්න
+  // Message sending
   sendMessage: async (senderId, receiverId, messageContent) => {
     const { data } = await api.post("/api/chat/send", {
       senderId,
@@ -64,21 +60,19 @@ getCurrentUser: async () => {
     return data;
   },
 
-  // Chat history ගන්න
+  // get the Chat history 
   getHistory: async (senderId, receiverId) => {
     const { data } = await api.get(`/api/chat/history/${senderId}/${receiverId}`);
     return data;
   },
 
-  // Messages read mark කරන්න
+  // Messages read mark 
   markAsRead: async (senderId, receiverId) => {
     await api.put(`/api/chat/read/${senderId}/${receiverId}`);
   },
 };
 
-// =====================================================================
 // SUB COMPONENTS
-// =====================================================================
 function Avatar({ initials, size = 40, online = false }) {
   return (
     <div style={{ position: "relative", display: "inline-block", flexShrink: 0 }}>
@@ -237,13 +231,12 @@ function EmptyState() {
   );
 }
 
-// =====================================================================
+
 // MAIN COMPONENT
-// =====================================================================
 export default function SecureChat() {
-  // Current logged-in user (JWT ගෙන් ගන්නවා)
+  // Current logged-in user 
   const [currentUser, setCurrentUser] = useState(null);
-  // Database ගෙ users (contacts)
+  // Database  users (contacts)
   const [contacts, setContacts] = useState([]);
   const [contactsLoading, setContactsLoading] = useState(true);
 
@@ -259,9 +252,8 @@ export default function SecureChat() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // ----------------------------------------------------------------
-  // App start වෙනකොට current user + contacts load කරන්න
-  // ----------------------------------------------------------------
+  //App Start get current user and contacts load 
+  
   useEffect(() => {
     const init = async () => {
       setContactsLoading(true);
@@ -274,8 +266,7 @@ export default function SecureChat() {
 
         setCurrentUser(meData);
 
-        // Current user contacts list ගෙන් exclude කරන්න
-        // Active users only show කරන්න
+        // Current user contacts list get exclude and inactive users
         const filtered = allUsers.filter(
           (u) => u.id !== meData.id && u.active !== false
         );
@@ -290,18 +281,14 @@ export default function SecureChat() {
     init();
   }, []);
 
-  // ----------------------------------------------------------------
   // Auto scroll
-  // ----------------------------------------------------------------
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
-  // ----------------------------------------------------------------
   // Chat history load
-  // ----------------------------------------------------------------
   const loadHistory = useCallback(async (contact) => {
     if (!currentUser) return;
     setLoading(true);
@@ -315,7 +302,7 @@ export default function SecureChat() {
           [contact.id]: history[history.length - 1],
         }));
       }
-      // Messages read ලෙස mark කරන්න
+      // Messages read mark 
       await ChatAPI.markAsRead(contact.id, currentUser.id);
     } catch (err) {
       setError("Could not load messages. Please check backend connection.");
@@ -325,9 +312,7 @@ export default function SecureChat() {
     }
   }, [currentUser]);
 
-  // ----------------------------------------------------------------
   // Contact select
-  // ----------------------------------------------------------------
   const handleSelectContact = useCallback((contact) => {
     setSelectedContact(contact);
     setInputText("");
@@ -336,15 +321,13 @@ export default function SecureChat() {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, [loadHistory]);
 
-  // ----------------------------------------------------------------
   // Send message
-  // ----------------------------------------------------------------
   const handleSend = async () => {
     if (!inputText.trim() || !selectedContact || sending || !currentUser) return;
     const text = inputText.trim();
     setInputText("");
 
-    // Optimistic update - UI immediately update වෙනවා
+    // Optimistic update - UI immediately update 
     const optimistic = {
       id: `temp-${Date.now()}`,
       senderId: currentUser.id,
@@ -364,7 +347,7 @@ export default function SecureChat() {
       );
       setLastMessages((prev) => ({ ...prev, [selectedContact.id]: saved }));
     } catch (err) {
-      // Failed නම් optimistic message remove
+      // Failed  optimistic message remove
       setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       setError("Failed to send message. Try again.");
       setInputText(text);
@@ -380,9 +363,7 @@ export default function SecureChat() {
     }
   };
 
-  // ----------------------------------------------------------------
   // Group messages by date
-  // ----------------------------------------------------------------
   const groupedMessages = messages.reduce((groups, msg) => {
     const label = formatDate(msg.timestamp);
     if (!groups[label]) groups[label] = [];
@@ -390,9 +371,7 @@ export default function SecureChat() {
     return groups;
   }, {});
 
-  // ----------------------------------------------------------------
   // Filter contacts by search
-  // ----------------------------------------------------------------
   const filteredContacts = contacts.filter((c) =>
     c.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -402,9 +381,7 @@ export default function SecureChat() {
     ? (currentUser.initials || getInitials(currentUser.name))
     : "ME";
 
-  // ----------------------------------------------------------------
   // RENDER
-  // ----------------------------------------------------------------
   return (
     <>
       <link
