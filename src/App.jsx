@@ -1,121 +1,153 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './index.css';
+
+// Context & Layouts
+import { ThemeProvider } from './context/Themecontext';
+import Layout from './components/Layout';
+import NavigationBar from './components/NavigationBar';
+
+// Pages & Components
+import TemplateGalleryPage from './pages/TemplateGalleryPage';
+import WorkspacePage from './pages/WorkspacePage';
+import UploadPage from './pages/UploadPages';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import LoginHistory from './components/LoginHistory';
+import PromptHistory from './components/PromptHistory';
+import RegistrationHistory from './components/RegistrationHistory';
+import UserManagement from './UserManagement'; 
+import ChatBox from './pages/ChatBox';         
+import RegisterForm from './components/RegisterForm';
+import SecureChat from './pages/Securechat'; 
+import ProfileCard from './components/ProfileCard';
+
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const token = localStorage.getItem('token');
+  
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const userRole = payload.role || payload.authorities || '';
+
+    
+    if (allowedRoles && allowedRoles.length > 0) {
+      const hasPermission = allowedRoles.some(role => userRole.toUpperCase().includes(role));
+      if (!hasPermission) {
+        return <Navigate to="/chat" replace />;
+      }
+    }
+  } catch (e) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [showModal, setShowModal] = useState(false);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="App min-vh-100 d-flex flex-column" style={{ backgroundColor: 'var(--bg-main)' }}>
+          
+          <Routes>
+            {/* ── Redirect directly to Login ── */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            
+            <Route path="/login" element={<Login />} />
 
-      <div className="ticks"></div>
+            {/* All other routes wrapped inside the Main Layout */}
+            <Route
+              path="*"
+              element={
+                <Layout>
+                  <NavigationBar />
+                  
+                  <main className="flex-grow-1" style={{ marginTop: '80px' }}>
+                    <Routes>
+                      {/* Default Route */}
+                      <Route path="/" element={<Navigate to="/login" replace />} />
+                      
+                      {/* ──  (Junior & Senior)  Pages ── */}
+                      <Route path="/collection" element={
+                        <ProtectedRoute>
+                          <TemplateGalleryPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/workspace" element={
+                        <ProtectedRoute>
+                          <WorkspacePage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/upload" element={
+                        <ProtectedRoute>
+                          <UploadPage />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/chat" element={
+                        <ProtectedRoute>
+                          <ChatBox />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/messages" element={
+                        <ProtectedRoute>
+                          <SecureChat />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/profile" element={
+                        <ProtectedRoute>
+                          <ProfileCard />
+                        </ProtectedRoute>
+                      } />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                      {/* ── SENIORLAWYER Pages ── */}
+                      <Route path="/dashboard" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <Dashboard />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/login-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <LoginHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/prompt-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <PromptHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/registration-history" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <RegistrationHistory />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/users" element={
+                        <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
+                          <UserManagement />
+                        </ProtectedRoute>
+                      } />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+                      {/* Fallback */}
+                      <Route path="*" element={<Navigate to="/chat" replace />} />
+                    </Routes>
+                  </main>
+
+                  <RegisterForm show={showModal} onClose={() => setShowModal(false)} />
+                  
+                </Layout>
+              }
+            />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
