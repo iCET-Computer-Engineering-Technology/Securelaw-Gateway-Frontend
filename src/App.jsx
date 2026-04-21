@@ -23,36 +23,28 @@ import RegisterForm from './components/RegisterForm';
 import SecureChat from './pages/Securechat'; 
 import ProfileCard from './components/ProfileCard';
 
-// ── අලුතෙන් එකතු කරපු Route Guard එක ──
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   
-  // 1. Token එකක් නැත්තම් (ලොග් වෙලා නැත්තම්) කෙලින්ම Login එකට යවනවා
+  
   if (!token) {
     return <Navigate to="/login" replace />;
   }
 
   try {
-    // 2. Token එක ඇතුලේ තියෙන Role එක කියවනවා
     const payload = JSON.parse(atob(token.split('.')[1]));
     const userRole = payload.role || payload.authorities || '';
 
-    // 3. මේ Page එකට යන්න විශේෂ Role එකක් ඕනෙද කියලා බලනවා
+    
     if (allowedRoles && allowedRoles.length > 0) {
-      // User ගේ Role එක allowedRoles ලිස්ට් එකේ නැත්තම්...
       const hasPermission = allowedRoles.some(role => userRole.toUpperCase().includes(role));
-      
       if (!hasPermission) {
-        // අවසර නැත්තම්, එයාව ආපහු Chat එකටම විසි කරනවා!
         return <Navigate to="/chat" replace />;
       }
     }
   } catch (e) {
-    // Token එක අවුල් නම් Login එකට යවනවා
     return <Navigate to="/login" replace />;
   }
-
-  // ඔක්කොම හරි නම්, එයාට යන්න හදපු Page එකට යන්න දෙනවා
   return children;
 };
 
@@ -82,7 +74,7 @@ function App() {
                       {/* Default Route */}
                       <Route path="/" element={<Navigate to="/login" replace />} />
                       
-                      {/* ── හැමෝටම (Junior & Senior) යන්න පුළුවන් Pages ── */}
+                      {/* ──  (Junior & Senior)  Pages ── */}
                       <Route path="/collection" element={
                         <ProtectedRoute>
                           <TemplateGalleryPage />
@@ -114,7 +106,7 @@ function App() {
                         </ProtectedRoute>
                       } />
 
-                      {/* ── SENIOR සහ ADMIN ලාට විතරක් යන්න පුළුවන් Pages ── */}
+                      {/* ── SENIORLAWYER Pages ── */}
                       <Route path="/dashboard" element={
                         <ProtectedRoute allowedRoles={['SENIOR', 'ADMIN']}>
                           <Dashboard />
